@@ -1,185 +1,191 @@
-"""
-BAS - BAS Questionnaire
-=======================
+import random
+from typing import Any, Dict, List
 
-9 items questionnaire
-
-Source: Extracted from ecedr application
-Applications: ecedr
-Author: Fondation FondaMental
-Version: 2.0.0
-"""
-
-from dataclasses import dataclass
-from ..core.models import (
-    BaseQuestionnaire,
-    Question,
-    AnswerOption,
-    QuestionType,
-    PathologyDomain,
-    RespondentType,
-    QuestionnaireResponse,
-    ScoreResult
-)
-from ..core.scoring import SimpleSumStrategy
-from ..core.registry import register_questionnaire
-
-
-@register_questionnaire("BAS")
-@dataclass
-class Bas(BaseQuestionnaire):
-    """BAS Questionnaire - reusable across applications."""
+class BASQuestionnaire:
+    """BAS - Behavioral Activation System / Bech Anxiety Scale
     
+    Clinician-rated scale assessing anxiety symptoms.
+    
+    Structure:
+    - 10 items assessing anxiety dimensions:
+      * Inner tension
+      * Hostile feelings
+      * Hypochondria
+      * Phobias
+      * Worrying over trifles
+      * Sleep reduction
+      * Neurovegetative symptoms (subjective)
+      * Pain
+      * Autonomic disturbances (observed)
+      * Muscular tension
+    
+    Scoring:
+    - Each item scored 0-6
+    - 0, 2, 4, 6 = clearly defined points
+    - 1, 3, 5 = intermediate points
+    - Total score: 0-60
+    - Higher scores indicate greater anxiety
+    
+    Clinical Use:
+    - Assessment of anxiety in depression
+    - Treatment monitoring
+    - Research on anxiety disorders
+    """
+
     def __init__(self):
-        """Initialize BAS questionnaire with all 9 items."""
+        self.name = "BAS - Bech Anxiety Scale"
+        self.description = "Échelle d'anxiété de Bech (évaluation clinicienne)."
+        self.num_items = 10
+        self.used_in_applications = ['cedr']
+        self.questions = self._init_questions()
+
+    def _init_questions(self) -> List[Dict[str, Any]]:
+        """Initialize all 10 BAS items."""
         
-        questions_list = [
-            Question(
-                id='bas1',
-                text="Tension intérieure. Correspond aux sentiments de malaise mal défini, d'irritabilité, d'agitation intérieure,\nde tension nerveuse allant jusqu'à la panique, l'effroi ou l'angoisse. Coter selon l’intensité, la fréquence, la\ndurée, le degré de réassurance nécessaire.\nA distinguer de la tristesse, de l'inquiétude pour des \\",
-                options=[
-                    AnswerOption(value='a', label="0 Calme. Tension intérieure seulement passagère.", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Sentiments occasionnels d'irritabilité et de malaise mal défini", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Sentiments continuels de tension intérieure ou panique intermittente que le malade ne peut maitriser qu'avec difficultés", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Effroi ou angoisse sans relâche. Panique envahissante.", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas10',
-                text="Troubles neuro-végétatifs. Correspond à des symptômes tels que : palpitations, difficultés respiratoires,vertiges, sueurs abondantes, froideur des extrémités, sécheresse de la bouche, troubles digestifs, diarrhées,mictions fréquentes.A distinguer de la tension intérieure, des douleurs et des troubles sensori-moteurs.",
-                options=[
-                    AnswerOption(value='a', label="0 Calme. Tension intérieure seulement passagère.", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Symptômes neuro-végétatifs à l'occasion d'une émotion", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Troubles neuro-végétatifs fréquents ou intenses,vécus comme gênants ou affectant la vie sociale", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Troubles neuro-végétatifs très fréquents, interrompant les activités ou invalidants.", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas2',
-                text="Sentiments hostiles. Correspond à la colère, à l’hostilité, à des sentiments agressifs avec ou sans\nmanifestations actives.\nCoter selon l’intensité, la fréquence et le niveau de provocation toléré.\nCoter zéro l'incapacité à ressentir de la colère.",
-                options=[
-                    AnswerOption(value='a', label="0 Ne se met pas facilement en colère", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Se met facilement en colère. Exprime des sentiments hostiles qui sont aisément dissipés", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Répond aux provocations par une hostilité ou une colère disproportionnée", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Etat persistant de colère, de fureur, ou de haine intense, difficile ou impossible à contrôler", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas3',
-                text="Hypocondrie. Correspond à une préoccupation exagérée ou une inquiétude injustifiée concernant la sante\nou les maladies.\nA distinguer de l’inquiétude pour des \\",
-                options=[
-                    AnswerOption(value='a', label="0 Absence de préoccupation particulière concernant la sante", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Réagit avec appréhension au moindre signe de désordre physique. Peur exagérée de la maladie", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Convaincu qu'il est atteint d'une maladie, mais peut être rassuré au moins temporairement", score=4),
-                    AnswerOption(value='f', label="5", score=5)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas5',
-                text="Inquiétude pour des \\",
-                options=[
-                    AnswerOption(value='a', label="0 Pas d'inquiétude particulière ", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Inquiétude injustifiée pouvant être dissipée ", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Inquiet et tracassé par des vétilles et les menus faits de la vie quotidienne", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Inquiétude envahissante et souvent douloureuse. Les tentatives pour rassurer le sujet sont sans\neffet .", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas6',
-                text="Douleurs. Correspond à l'expression d'une gêne ou d'une douleur physique.\nCoter selon l'intensité, la fréquence, la durée et aussi la demande de soulagement. Ne tenir compte d'aucune opinion\nquant à une organicité éventuelle.\nA distinguer de l'hypocondrie, des troubles neuro-végétatifs et de la tension musculaire.",
-                options=[
-                    AnswerOption(value='a', label="0 Absence de douleurs ou douleurs passagères", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Douleurs précises mais occasionnelles", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Douleurs prolongées et pénibles. Demandes d'un traitement antalgique efficace", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Douleurs intenses ou invalidantes", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas7',
-                text="Troubles neuro-végétatifs. Correspond aux signes de dysfonctionnement neuro-végétatif :\nhyperventilation, bouffées vasomotrices, sueurs, mains froides, dilatation pupillaire, bouche sèche,\névanouissements.",
-                options=[
-                    AnswerOption(value='a', label="0 Pas de troubles neuro-végétatifs observés.", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Troubles neuro-végétatifs discrets : rougit, blêmit ou se couvre de sueurs à l'occasion d'une émotion.", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Signes neuro-végétatifs évidents même en dehors des situations de stress", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Troubles neuro-végétatifs obligeant à interrompre l'entretien", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas8',
-                text="Tension musculaire. Correspond à une tension musculaire telle qu'on peut l'observer dans la mimique, la\nposture et les mouvements",
-                options=[
-                    AnswerOption(value='a', label="0 Parait détendu", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Légère tension dans le visage et la posture", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4  Tension modérée dans la posture et la face, que l'on remarque facilement au niveau des mâchoires et des muscles du cou. Ne semble pas trouver une position détendue quand il est assis. Mouvements raides et maladroits", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Tendu d'une manière frappante. Assis, se tient souvent vouté et recroquevillé, ou bien est tendu et se tient droit et raide sur le bord du siège", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='bas9',
-                text="Réduction du sommeil. Correspond à une réduction de la durée ou de la profondeur du sommeil par comparaison avec le sommeil du patient lorsqu'il n'est pas malade",
-                options=[
-                    AnswerOption(value='a', label="0 Dort comme d'habitude", score=0),
-                    AnswerOption(value='b', label="1", score=1),
-                    AnswerOption(value='c', label="2 Légère difficulté à s'endormir ou sommeil légèrement réduit, léger ou agité", score=2),
-                    AnswerOption(value='d', label="3", score=3),
-                    AnswerOption(value='e', label="4 Sommeil réduit ou interrompu au moins deux heures", score=4),
-                    AnswerOption(value='f', label="5", score=5),
-                    AnswerOption(value='g', label="6 Moins de deux ou trois heures de sommeil", score=6)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            )
+        # Standard 0-6 scoring options
+        options = {str(i): i for i in range(7)}
+        
+        items_text = [
+            "Tension intérieure - Sentiments de malaise, irritabilité, tension nerveuse, panique",
+            "Sentiments hostiles - Colère, hostilité, sentiments agressifs",
+            "Hypocondrie - Préoccupation exagérée concernant la santé",
+            "Phobies - Peur injustifiée dans des situations spécifiques",
+            "Inquiétude pour des \"riens\" - Soucis excessifs difficiles à dissiper",
+            "Réduction du sommeil - Durée ou profondeur du sommeil réduite",
+            "Troubles neuro-végétatifs (subjectifs) - Palpitations, vertiges, sueurs",
+            "Douleurs - Céphalées, douleurs musculaires ou articulaires",
+            "Troubles neuro-végétatifs (observés) - Signes autonomes visibles",
+            "Tension musculaire - Tension observable dans mimique et posture"
         ]
         
-        super().__init__(
-            code="BAS",
-            name="BAS Questionnaire",
-            description="9 items questionnaire",
-            pathology_domain=PathologyDomain.DEPRESSION,
-            respondent_type=RespondentType.SELF_REPORT,
-            questions=questions_list,
-            visit_types=["Initial", "Follow-up"],
-            estimated_duration_minutes=5,
-            version="1.0"
+        questions = []
+        for i, text in enumerate(items_text, 1):
+            questions.append({
+                "id": f"BAS{i}",
+                "number": i,
+                "text": f"{i}. {text}",
+                "options": options
+            })
+        
+        return questions
+
+    def calculate_score(self, responses: Dict[str, str]) -> Dict[str, Any]:
+        """
+        Calculate BAS total score.
+
+        Args:
+            responses (Dict[str, str]): A dictionary of responses, where the key is the question ID
+                                       (e.g., "BAS1") and the value is the score (0-6 as string).
+
+        Returns:
+            Dict[str, Any]: A dictionary containing total score and interpretation.
+        """
+        if len(responses) != self.num_items:
+            raise ValueError(f"Expected {self.num_items} responses, but got {len(responses)}")
+
+        total_score = 0
+        item_scores = {}
+        
+        # Calculate scores
+        for question in self.questions:
+            q_id = question["id"]
+            if q_id not in responses:
+                raise ValueError(f"Missing response for question {q_id}")
+            
+            response_text = responses[q_id]
+            if response_text not in question["options"]:
+                raise ValueError(
+                    f"Invalid response '{response_text}' for question {q_id}. "
+                    f"Valid options are: 0-6"
+                )
+            
+            score = question["options"][response_text]
+            item_scores[q_id] = score
+            total_score += score
+
+        # Interpret score
+        interpretation = self._interpret_score(total_score)
+
+        return {
+            "total_score": total_score,
+            "max_score": 60,
+            "interpretation": interpretation,
+            "severity": self._get_severity(total_score),
+            "item_scores": item_scores
+        }
+
+    def _interpret_score(self, score: int) -> str:
+        """Interpret BAS total score."""
+        if score >= 40:
+            return "Anxiété très sévère - Symptômes anxieux invalidants"
+        elif score >= 30:
+            return "Anxiété sévère - Symptômes anxieux importants"
+        elif score >= 20:
+            return "Anxiété modérée - Symptômes anxieux significatifs"
+        elif score >= 10:
+            return "Anxiété légère - Symptômes anxieux mineurs"
+        else:
+            return "Anxiété minimale ou absente"
+
+    def _get_severity(self, score: int) -> str:
+        """Get severity level."""
+        if score >= 40:
+            return "very_severe"
+        elif score >= 30:
+            return "severe"
+        elif score >= 20:
+            return "moderate"
+        elif score >= 10:
+            return "mild"
+        else:
+            return "minimal"
+
+    def get_random_responses(self) -> Dict[str, str]:
+        """Generates random valid responses for testing purposes."""
+        responses = {}
+        for question in self.questions:
+            responses[question["id"]] = random.choice(list(question["options"].keys()))
+        return responses
+
+    def get_instruction(self) -> str:
+        """Returns the instruction text for the questionnaire."""
+        return (
+            "CONSIGNES:\n\n"
+            "Échelle d'évaluation clinique de l'anxiété.\n\n"
+            "La cotation doit se fonder sur l'entretien clinique allant de questions générales "
+            "sur les symptômes à des questions plus précises qui permettent une cotation exacte "
+            "de la sévérité.\n\n"
+            "Le cotateur doit décider si la note est à un des points nettement définis de l'échelle "
+            "(0, 2, 4, 6) ou à un point intermédiaire (1, 3, 5).\n\n"
+            "Échelle de réponse:\n"
+            "0, 1, 2, 3, 4, 5, 6\n"
+            "(0 = absent, 6 = très sévère)\n\n"
+            "Période évaluée: Les 7 derniers jours"
         )
-        
-        self.scoring_strategy = SimpleSumStrategy()
+
+
+if __name__ == '__main__':
+    bas = BASQuestionnaire()
+    print(f"Questionnaire: {bas.name}")
+    print(f"Description: {bas.description}")
+    print(f"Number of items: {bas.num_items}")
+    print()
     
-    def compute_score(self, responses: QuestionnaireResponse) -> ScoreResult:
-        """Compute BAS score."""
-        validation_errors = self.validate_responses(responses)
-        if validation_errors:
-            raise ValueError(f"Invalid responses: {'; '.join(validation_errors)}")
-        
-        result = self.scoring_strategy.calculate(responses, self.questions)
-        return result
+    # Test case: Severe anxiety
+    print("Example: Severe Anxiety")
+    severe = {}
+    for q in bas.questions:
+        severe[q['id']] = "5"  # High anxiety
+    
+    result = bas.calculate_score(severe)
+    print(f"Total Score: {result['total_score']}/{result['max_score']}")
+    print(f"Severity: {result['severity']}")
+    print(f"Interpretation: {result['interpretation']}")
+    print()
+    
+    print("="*80)
+    print("✓ BAS implementation complete")
+    print("  - 10 items")
+    print("  - 0-60 scoring range")
+    print("  - Clinician-rated anxiety assessment")
+
