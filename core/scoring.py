@@ -117,6 +117,20 @@ class SimpleSumStrategy(ScoringStrategy):
         )
 
 
+class NotImplementedStrategy(ScoringStrategy):
+    """Placeholder strategy used when validated scoring is unavailable."""
+
+    def __init__(self, reason: str = "Scoring not implemented"):
+        self.reason = reason
+
+    def calculate(
+        self,
+        responses: QuestionnaireResponse,
+        questions: List[Question]
+    ) -> ScoreResult:
+        raise NotImplementedError(self.reason)
+
+
 class WeightedSumStrategy(ScoringStrategy):
     """
     Weighted summation where specific questions have multipliers.

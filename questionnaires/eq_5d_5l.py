@@ -1,103 +1,38 @@
-"""
-EQ_5D_5L - EQ_5D_5L Questionnaire
-=================================
+"""EQ-5D-5L quality of life questionnaire backed by JSON data."""
 
-4 items questionnaire
-
-Source: Extracted from ecedr application
-Applications: ecedr
-Author: Fondation FondaMental
-Version: 2.0.0
-"""
+from __future__ import annotations
 
 from dataclasses import dataclass
-from ..core.models import (
-    BaseQuestionnaire,
-    Question,
-    AnswerOption,
-    QuestionType,
-    PathologyDomain,
-    RespondentType,
-    QuestionnaireResponse,
-    ScoreResult
-)
-from ..core.scoring import SimpleSumStrategy
+from pathlib import Path
+
+from ..core.json_loader import load_questionnaire_json
+from ..core.models import BaseQuestionnaire, QuestionnaireResponse, ScoreResult
 from ..core.registry import register_questionnaire
+
+
+DATA_FILE = Path(__file__).with_name("data").joinpath("eq_5d_5l.json")
 
 
 @register_questionnaire("EQ_5D_5L")
 @dataclass
 class Eq5d5l(BaseQuestionnaire):
-    """EQ_5D_5L Questionnaire - reusable across applications."""
-    
+    """EQ-5D-5L questionnaire loaded from structured JSON."""
+
     def __init__(self):
-        """Initialize EQ_5D_5L questionnaire with all 4 items."""
-        
-        questions_list = [
-            Question(
-                id='eq5d5l_activite',
-                text="ACTIVITES COURANTES",
-                options=[
-                    AnswerOption(value='a', label="Je n’ai aucun problème pour accomplir mes activités courantes", score=0),
-                    AnswerOption(value='b', label="J’ai des problèmes légers pour accomplir mes activités courantes", score=1),
-                    AnswerOption(value='c', label="J’ai des problèmes modérés pour accomplir mes activités courantes", score=2),
-                    AnswerOption(value='d', label="J’ai des problèmes sévères pour accomplir mes activités courantes", score=3),
-                    AnswerOption(value='e', label="Je suis incapable d’accomplir mes activités courantes", score=4)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='eq5d5l_autonomie',
-                text="AUTONOMIE DE LA PERSONNE",
-                options=[
-                    AnswerOption(value='a', label="Je n’ai aucun problème pour me laver ou m’habiller tout seul", score=0),
-                    AnswerOption(value='b', label="J’ai des problèmes légers pour me laver ou m’habiller tout seul", score=1),
-                    AnswerOption(value='c', label="J’ai des problèmes modérés pour me laver ou m’habiller tout seul", score=2),
-                    AnswerOption(value='d', label="J’ai des problèmes sévères pour me laver ou m’habiller tout seul", score=3)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='eq5d5l_dou_gene',
-                text="DOULEURS / GENE",
-                options=[
-                    AnswerOption(value='a', label="Je n’ai ni douleur, ni gêne", score=0)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='eq5d5l_mobilite',
-                text="MOBILITE",
-                options=[
-                    AnswerOption(value='a', label="Je n’ai aucun problème pour me déplacer à pied", score=0),
-                    AnswerOption(value='b', label="J’ai des problèmes légers pour me déplacer à pied", score=1),
-                    AnswerOption(value='c', label="J’ai des problèmes modérés pour me déplacer à pied", score=2),
-                    AnswerOption(value='d', label="J’ai des problèmes sévères pour me déplacer à pied", score=3),
-                    AnswerOption(value='e', label="Je suis incapable de me déplacer à pied", score=4)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            )
-        ]
-        
-        super().__init__(
-            code="EQ_5D_5L",
-            name="EQ_5D_5L Questionnaire",
-            description="4 items questionnaire",
-            pathology_domain=PathologyDomain.DEPRESSION,
-            respondent_type=RespondentType.SELF_REPORT,
-            questions=questions_list,
-            visit_types=["Initial", "Follow-up"],
-            estimated_duration_minutes=5,
-            version="1.0"
-        )
-        
-        self.scoring_strategy = SimpleSumStrategy()
-    
+        definition = load_questionnaire_json(DATA_FILE)
+        scoring_strategy = definition.pop("scoring_strategy")
+
+        super().__init__(**definition)
+        self.scoring_strategy = scoring_strategy
+
     def compute_score(self, responses: QuestionnaireResponse) -> ScoreResult:
-        """Compute EQ_5D_5L score."""
+        """Delegate to the configured scoring strategy (raises if unavailable)."""
+
         validation_errors = self.validate_responses(responses)
         if validation_errors:
             raise ValueError(f"Invalid responses: {'; '.join(validation_errors)}")
-        
-        result = self.scoring_strategy.calculate(responses, self.questions)
-        return result
+
+        if not self.scoring_strategy:
+            raise NotImplementedError("No scoring strategy configured for EQ-5D-5L")
+
+        return self.scoring_strategy.calculate(responses, self.questions)

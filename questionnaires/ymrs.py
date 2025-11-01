@@ -21,7 +21,7 @@ from ..core.models import (
     QuestionnaireResponse,
     ScoreResult
 )
-from ..core.scoring import SimpleSumStrategy
+from ..core.scoring import WeightedSumStrategy
 from ..core.registry import register_questionnaire
 
 
@@ -36,47 +36,25 @@ class Ymrs(BaseQuestionnaire):
         questions_list = [
             Question(
                 id='ymrs1',
-                text="1. Elévation de l’humeur",
+                text="1. Élévation de l’humeur",
                 options=[
-                    AnswerOption(value='a', label="0. Absente", score=0),
-                    AnswerOption(value='b', label="1. Légèrement ou possiblement élevée lorsqu’on l’interroge", score=1),
-                    AnswerOption(value='c', label="2. Elévation subjective nette ; optimiste, plein d’assurance ; gai ; contenu approprié", score=2),
-                    AnswerOption(value='d', label="3. Elevée, au contenu approprié, plaisantin", score=3),
-                    AnswerOption(value='e', label="4. Euphorique ; rires inappropriés ; chante", score=4)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='ymrs10',
-                text="10. Apparence",
-                options=[
-                    AnswerOption(value='a', label="0. Soignée et habillement adéquat", score=0),
-                    AnswerOption(value='b', label="1. Légèrement ou possiblement élevée lorsqu’on l’interroge", score=1),
-                    AnswerOption(value='c', label="2. Peu soigné ; modérément débraillé ; trop habillé", score=2),
-                    AnswerOption(value='d', label="3. Débraillé ; à moitié nu ; maquillage criard", score=3),
-                    AnswerOption(value='e', label="4. Complètement négligé ; orné ; accoutrement bizarre", score=4)
-                ],
-                question_type=QuestionType.SINGLE_CHOICE
-            ),
-            Question(
-                id='ymrs11',
-                text="11. Introspection",
-                options=[
-                    AnswerOption(value='a', label="0. Présente ; admet être malade ; reconnaît le besoin de traitement", score=0),
-                    AnswerOption(value='b', label="1. Eventuellement malade", score=1),
-                    AnswerOption(value='c', label="2. Admet des changements de comportement, mais nie la maladie", score=2),
-                    AnswerOption(value='d', label="3. Admet de possibles changements de comportement, mais nie la maladie", score=3),
-                    AnswerOption(value='e', label="4. Nie tout changement de comportement", score=4)
+                    AnswerOption(value='0', label="0. Absente", score=0),
+                    AnswerOption(value='1', label="1. Légèrement ou possiblement élevée lorsqu’on l’interroge", score=1),
+                    AnswerOption(value='2', label="2. Élévation subjective nette ; optimiste, confiant, enjoué", score=2),
+                    AnswerOption(value='3', label="3. Humeur élevée ; plaisanteries excessives", score=3),
+                    AnswerOption(value='4', label="4. Euphorique ; rires ou chants inappropriés", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
             Question(
                 id='ymrs2',
-                text="2. Activité motrice et énergie augmentées",
+                text="2. Activité motrice / énergie",
                 options=[
-                    AnswerOption(value='a', label="0. Absentes", score=0),
-                    AnswerOption(value='b', label="1. Subjectivement élevées", score=1),
-                    AnswerOption(value='c', label="2. Animé ; expression gestuelle plus élevée", score=2)
+                    AnswerOption(value='0', label="0. Activité normale", score=0),
+                    AnswerOption(value='1', label="1. Activité ou énergie légèrement augmentée", score=1),
+                    AnswerOption(value='2', label="2. Agitation modérée ; gestuelle accrue", score=2),
+                    AnswerOption(value='3', label="3. Agitation marquée ; difficultés à rester assis", score=3),
+                    AnswerOption(value='4', label="4. Agitation extrême nécessitant une surveillance", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
@@ -84,10 +62,11 @@ class Ymrs(BaseQuestionnaire):
                 id='ymrs3',
                 text="3. Intérêt sexuel",
                 options=[
-                    AnswerOption(value='a', label="0. Normal, non augmenté", score=0),
-                    AnswerOption(value='b', label="1. Augmentation légère ou possible", score=1),
-                    AnswerOption(value='c', label="2. Clairement augmenté lorsqu’on l’interroge", score=2),
-                    AnswerOption(value='d', label="3. Parle spontanément de la sexualité ; élabore sur des thèmes sexuels ; se décrit comme étant hyper sexuel", score=3)
+                    AnswerOption(value='0', label="0. Normal", score=0),
+                    AnswerOption(value='1', label="1. Légère augmentation ou possible", score=1),
+                    AnswerOption(value='2', label="2. Augmentation nette lorsqu’on l’interroge", score=2),
+                    AnswerOption(value='3', label="3. Aborde spontanément des thèmes sexuels ; se décrit comme hypersexuel", score=3),
+                    AnswerOption(value='4', label="4. Comportement sexuel inapproprié", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
@@ -95,11 +74,11 @@ class Ymrs(BaseQuestionnaire):
                 id='ymrs4',
                 text="4. Sommeil",
                 options=[
-                    AnswerOption(value='a', label="0. Ne rapporte pas de diminution de sommeil", score=0),
-                    AnswerOption(value='b', label="1. Dort jusqu’à une heure de moins que d’habitude", score=1),
-                    AnswerOption(value='c', label="2. Sommeil réduit de plus d’une heure par rapport à d’habitude", score=2),
-                    AnswerOption(value='d', label="3. Rapporte un moins grand besoin de sommeil", score=3),
-                    AnswerOption(value='e', label="4. Nie le besoin de sommeil", score=4)
+                    AnswerOption(value='0', label="0. Sommeil habituel", score=0),
+                    AnswerOption(value='1', label="1. Perte inférieure ou égale à une heure", score=1),
+                    AnswerOption(value='2', label="2. Réduction supérieure à une heure", score=2),
+                    AnswerOption(value='3', label="3. Dormir trois heures ou moins", score=3),
+                    AnswerOption(value='4', label="4. Nie le besoin de dormir", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
@@ -107,44 +86,83 @@ class Ymrs(BaseQuestionnaire):
                 id='ymrs5',
                 text="5. Irritabilité",
                 options=[
-                    AnswerOption(value='a', label="0. Absente", score=0),
-                    AnswerOption(value='b', label="2. Subjectivement augmentée", score=1),
-                    AnswerOption(value='c', label="4. Irritable par moment durant l’entretien ; épisodes récents d’énervement ou de colère dans le service", score=2),
-                    AnswerOption(value='d', label="6. Fréquemment irritable durant l’entretien ; brusque ; abrupt", score=3),
-                    AnswerOption(value='e', label="8. Hostile, non coopératif ; évaluation impossible", score=4)
+                    AnswerOption(value='0', label="0. Absente", score=0),
+                    AnswerOption(value='1', label="1. Légère ; subjectivement augmentée", score=1),
+                    AnswerOption(value='2', label="2. Irritable par moments durant l’entretien", score=2),
+                    AnswerOption(value='3', label="3. Fréquemment irritable ; brusque", score=3),
+                    AnswerOption(value='4', label="4. Hostile ; évaluation difficile ou impossible", score=4)
+                ],
+                question_type=QuestionType.SINGLE_CHOICE
+            ),
+            Question(
+                id='ymrs6',
+                text="6. Débit et quantité du langage",
+                options=[
+                    AnswerOption(value='0', label="0. Normal", score=0),
+                    AnswerOption(value='1', label="1. Pression légère ou possible", score=1),
+                    AnswerOption(value='2', label="2. Pression modérée ; interrompre devient difficile", score=2),
+                    AnswerOption(value='3', label="3. Doit être interrompu ; conversation difficile", score=3),
+                    AnswerOption(value='4', label="4. Logorrhée incoercible ou incohérente", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
             Question(
                 id='ymrs7',
-                text="7. Langage - troubles de la pensée",
+                text="7. Troubles de la pensée / langage",
                 options=[
-                    AnswerOption(value='a', label="0. Absent", score=0),
-                    AnswerOption(value='b', label="1. Circonstanciel ; légère distractivité ; pensées rapides", score=1),
-                    AnswerOption(value='c', label="2. Distractivité ; perd le fil de ses idées ; change fréquemment de sujet ; pensées accélérées", score=2),
-                    AnswerOption(value='d', label="3. Fuite des idées ; réponses hors sujet ; difficile à suivre ; fait des rimes ; écholalie", score=3),
-                    AnswerOption(value='e', label="4. Incohérent ; communication impossible", score=4)
+                    AnswerOption(value='0', label="0. Aucun", score=0),
+                    AnswerOption(value='1', label="1. Circonstanciel ; légère distractibilité", score=1),
+                    AnswerOption(value='2', label="2. Perd le fil ; changements fréquents de sujet", score=2),
+                    AnswerOption(value='3', label="3. Fuite des idées ; réponses hors sujet", score=3),
+                    AnswerOption(value='4', label="4. Incohérence ; communication impossible", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
             Question(
                 id='ymrs8',
-                text="8. Contenu",
+                text="8. Contenu de la pensée",
                 options=[
-                    AnswerOption(value='a', label="0. Normal", score=0),
-                    AnswerOption(value='b', label="2. Projets discutables ; intérêts nouveaux", score=1)
+                    AnswerOption(value='0', label="0. Normal", score=0),
+                    AnswerOption(value='1', label="1. Projets discutables ; nouveaux centres d’intérêt", score=1),
+                    AnswerOption(value='2', label="2. Idées grandioses modérées", score=2),
+                    AnswerOption(value='3', label="3. Délires expansifs marqués", score=3),
+                    AnswerOption(value='4', label="4. Délires grandioses extrêmes ou dangereux", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             ),
             Question(
                 id='ymrs9',
-                text="9. Comportement agressif et perturbateur",
+                text="9. Comportement perturbateur / agressivité",
                 options=[
-                    AnswerOption(value='a', label="0. Absent, coopératif", score=0),
-                    AnswerOption(value='b', label="2. Sarcastique ; parle fort par moment, sur la défensive", score=1),
-                    AnswerOption(value='c', label="4. Exigeant ; fait des menaces dans le service", score=2),
-                    AnswerOption(value='d', label="6. Menace l’évaluateur ; crie ; évaluation difficile", score=3),
-                    AnswerOption(value='e', label="8. Agressif physiquement ; destructeur ; évaluation impossible", score=4)
+                    AnswerOption(value='0', label="0. Coopératif", score=0),
+                    AnswerOption(value='1', label="1. Sarcastique ou bruyant par moments", score=1),
+                    AnswerOption(value='2', label="2. Exigeant ; menaces verbales", score=2),
+                    AnswerOption(value='3', label="3. Menace l’évaluateur ; criant", score=3),
+                    AnswerOption(value='4', label="4. Agressivité physique ou destructrice", score=4)
+                ],
+                question_type=QuestionType.SINGLE_CHOICE
+            ),
+            Question(
+                id='ymrs10',
+                text="10. Apparence",
+                options=[
+                    AnswerOption(value='0', label="0. Soigné ; habillement approprié", score=0),
+                    AnswerOption(value='1', label="1. Légèrement négligé ou flamboyant", score=1),
+                    AnswerOption(value='2', label="2. Modérément négligé ou extravagant", score=2),
+                    AnswerOption(value='3', label="3. Très négligé ; accoutrement bizarre", score=3),
+                    AnswerOption(value='4', label="4. Complètement négligé ou choquant", score=4)
+                ],
+                question_type=QuestionType.SINGLE_CHOICE
+            ),
+            Question(
+                id='ymrs11',
+                text="11. Introspection",
+                options=[
+                    AnswerOption(value='0', label="0. Reconnaît être malade ; accepte le traitement", score=0),
+                    AnswerOption(value='1', label="1. Possible maladie", score=1),
+                    AnswerOption(value='2', label="2. Admet des changements de comportement mais nie la maladie", score=2),
+                    AnswerOption(value='3', label="3. Admet de possibles changements mais nie la maladie", score=3),
+                    AnswerOption(value='4', label="4. Nie tout changement", score=4)
                 ],
                 question_type=QuestionType.SINGLE_CHOICE
             )
@@ -162,7 +180,12 @@ class Ymrs(BaseQuestionnaire):
             version="1.0"
         )
         
-        self.scoring_strategy = SimpleSumStrategy()
+        self.scoring_strategy = WeightedSumStrategy({
+            'ymrs5': 2.0,
+            'ymrs6': 2.0,
+            'ymrs8': 2.0,
+            'ymrs9': 2.0
+        })
     
     def compute_score(self, responses: QuestionnaireResponse) -> ScoreResult:
         """Compute YMRS score."""

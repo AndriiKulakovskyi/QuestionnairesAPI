@@ -93,7 +93,6 @@ from .ctq import Ctq
 from .ephp import Ephp
 from .epworth import Epworth
 from .eq5d import Eq5d
-from .eq5d5l import Eq5d5l
 from .eq_5d_5l import Eq5d5l
 from .erd import Erd
 from .etat_patient import EtatPatient
@@ -246,7 +245,6 @@ __all__ = [
     'Ephp',
     'Epworth',
     'Eq5d',
-    'Eq5d5l',
     'Eq5d5l',
     'Erd',
     'EtatPatient',
