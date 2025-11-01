@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fondamental-questionnaires"
+version = "2.0.0"
+description = "Modern psychiatric questionnaire library with 151+ validated instruments"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Fondation FondaMental", email = "contact@fondation-fondamental.org"}
+]
+keywords = [
+    "psychiatry",
+    "psychology",
+    "questionnaires", 
+    "mental-health",
+    "assessment",
+    "clinical-scales"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
+]
+
+# No external dependencies - only Python stdlib!
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "mypy>=1.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+]
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/fondation-fondamental/questionnaires"
+Documentation = "https://github.com/fondation-fondamental/questionnaires/docs"
+Repository = "https://github.com/fondation-fondamental/questionnaires"
+Issues = "https://github.com/fondation-fondamental/questionnaires/issues"
+
+[tool.setuptools.packages.find]
+exclude = ["tools*", "tests*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
