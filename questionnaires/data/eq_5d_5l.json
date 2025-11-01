@@ -1,0 +1,71 @@
+{
+  "code": "EQ_5D_5L",
+  "name": "EQ-5D-5L",
+  "description": "Instrument de qualité de vie EQ-5D-5L (version française).",
+  "pathology_domain": "general",
+  "respondent_type": "self_report",
+  "visit_types": ["Initial", "Follow-up"],
+  "estimated_duration_minutes": 5,
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "eq5d5l_mobilite",
+      "text": "MOBILITÉ",
+      "options": [
+        {"value": "1", "label": "Je n’ai aucun problème pour me déplacer", "score": 0},
+        {"value": "2", "label": "J’ai de légers problèmes pour me déplacer", "score": 1},
+        {"value": "3", "label": "J’ai des problèmes modérés pour me déplacer", "score": 2},
+        {"value": "4", "label": "J’ai des problèmes sévères pour me déplacer", "score": 3},
+        {"value": "5", "label": "Je suis incapable de me déplacer", "score": 4}
+      ]
+    },
+    {
+      "id": "eq5d5l_soins_personnels",
+      "text": "SOINS PERSONNELS",
+      "options": [
+        {"value": "1", "label": "Je n’ai aucun problème pour me laver ou m’habiller", "score": 0},
+        {"value": "2", "label": "J’ai de légers problèmes pour me laver ou m’habiller", "score": 1},
+        {"value": "3", "label": "J’ai des problèmes modérés pour me laver ou m’habiller", "score": 2},
+        {"value": "4", "label": "J’ai des problèmes sévères pour me laver ou m’habiller", "score": 3},
+        {"value": "5", "label": "Je suis incapable de me laver ou de m’habiller", "score": 4}
+      ]
+    },
+    {
+      "id": "eq5d5l_activites_courantes",
+      "text": "ACTIVITÉS COURANTES",
+      "options": [
+        {"value": "1", "label": "Je n’ai aucun problème pour accomplir mes activités courantes", "score": 0},
+        {"value": "2", "label": "J’ai de légers problèmes pour accomplir mes activités courantes", "score": 1},
+        {"value": "3", "label": "J’ai des problèmes modérés pour accomplir mes activités courantes", "score": 2},
+        {"value": "4", "label": "J’ai des problèmes sévères pour accomplir mes activités courantes", "score": 3},
+        {"value": "5", "label": "Je suis incapable d’accomplir mes activités courantes", "score": 4}
+      ]
+    },
+    {
+      "id": "eq5d5l_douleur_gene",
+      "text": "DOULEUR / GÊNE",
+      "options": [
+        {"value": "1", "label": "Je n’ai ni douleur ni gêne", "score": 0},
+        {"value": "2", "label": "J’ai une douleur ou une gêne légère", "score": 1},
+        {"value": "3", "label": "J’ai une douleur ou une gêne modérée", "score": 2},
+        {"value": "4", "label": "J’ai une douleur ou une gêne sévère", "score": 3},
+        {"value": "5", "label": "J’ai une douleur ou une gêne extrême", "score": 4}
+      ]
+    },
+    {
+      "id": "eq5d5l_anxiete_depression",
+      "text": "ANXIÉTÉ / DÉPRESSION",
+      "options": [
+        {"value": "1", "label": "Je ne suis ni anxieux ni déprimé", "score": 0},
+        {"value": "2", "label": "Je suis légèrement anxieux ou déprimé", "score": 1},
+        {"value": "3", "label": "Je suis modérément anxieux ou déprimé", "score": 2},
+        {"value": "4", "label": "Je suis très anxieux ou déprimé", "score": 3},
+        {"value": "5", "label": "Je suis extrêmement anxieux ou déprimé", "score": 4}
+      ]
+    }
+  ],
+  "scoring": {
+    "type": "not_implemented",
+    "reason": "L’index EQ-5D-5L requiert la table de valeurs française et un score EVA séparé."
+  }
+}
