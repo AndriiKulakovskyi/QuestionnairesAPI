@@ -184,6 +184,16 @@ class YMRSQuestionnaire:
         
         return questions
     
+    def get_instructions(self) -> str:
+        """Return YMRS administration instructions."""
+        return (
+            "Guide pour attribuer des points aux items : le but de chaque item est d’estimer la sévérité de cette "
+            "anomalie chez le patient. Lorsque plusieurs descriptions sont données pour un degré particulier de "
+            "sévérité, une seule description est suffisante pour pouvoir attribuer ce degré. Les descriptions données "
+            "sont des guides. On peut les ignorer si c’est nécessaire pour évaluer la sévérité, mais ceci doit plutôt "
+            "être l’exception que la règle."
+        )
+
     def _letter_to_score(self, letter: str) -> int:
         """Convert letter response to numeric score
         
@@ -226,14 +236,15 @@ class YMRSQuestionnaire:
         """Calculate the YMRS total score
         
         The YMRS score is the sum of all 11 items.
-        Each item is scored 0-4, giving a total range of 0-44.
+        Seven items are scored 0-4, four items (5, 6, 7, 9) are double-weighted (0-8).
+        Total score range: 0-60.
         
         Args:
             responses: Dictionary mapping question IDs to response letters ('a'-'e')
             
         Returns:
             Dictionary containing:
-                - 'score': Total YMRS score (0-44)
+                - 'score': Total YMRS score (0-60)
                 - 'valid': Whether calculation was possible
                 - 'errors': List of error messages if any
                 - 'interpretation': Severity level interpretation
@@ -249,10 +260,14 @@ class YMRSQuestionnaire:
         
         # Calculate total score by summing all items
         total_score = 0
+        double_weight_ids = {'radhtml_ymrs5', 'radhtml_ymrs6', 'radhtml_ymrs7', 'radhtml_ymrs9'}
         for question in self.questions:
             q_id = question['id']
             letter_response = responses.get(q_id, 'a')
-            total_score += self._letter_to_score(letter_response)
+            item_score = self._letter_to_score(letter_response)
+            if q_id in double_weight_ids:
+                item_score *= 2
+            total_score += item_score
         
         return {
             'score': total_score,
@@ -265,22 +280,22 @@ class YMRSQuestionnaire:
         """Provide interpretation of the YMRS score
         
         Standard YMRS cutoffs:
-        - < 12: Rémission / Absence de manie
-        - 12-20: Hypomanie
-        - >= 21: Manie
+        - < 6 : Euthymie
+        - 7-20 : Episode hypomaniaque
+        - > 20 : Episode maniaque
         
         Args:
-            score: Total YMRS score (0-44)
+            score: Total YMRS score (0-60)
             
         Returns:
             Interpretation text
         """
-        if score < 12:
-            return "Rémission / Absence de manie"
-        elif score < 21:
-            return "Hypomanie"
+        if score < 6:
+            return "Euthymie"
+        elif score <= 20:
+            return "Episode hypomaniaque"
         else:
-            return "Manie"
+            return "Episode maniaque"
 
 
 # Example usage

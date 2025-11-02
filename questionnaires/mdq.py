@@ -138,17 +138,30 @@ class MDQQuestionnaire:
         impairment = {
             'id': 'rad_mdq3',
             'number': '3',
-            'text': "À quel point, une de ces questions a été pour vous un problème ?",
+            'text': ("À quel point, une de ces questions a été pour vous un problème au point de ne plus "
+                     "travailler, d'avoir des difficultés familiales, légales, d'argent, de vous inciter "
+                     "à des bagarres ou des disputes ?"),
             'type': 'severity',
             'options': {
                 'Pas de problème': 0,
                 'Problème mineur': 1,
-                'Problème modéré': 2,
+                'Problème moyen': 2,
                 'Problème sérieux': 3
             }
         }
         
         return symptom_items + [co_occurrence, impairment]
+
+    def get_instructions(self) -> str:
+        """Return MDQ instructions"""
+        return (
+            "Questionnaire « TROUBLE de l'HUMEUR » (MDQ)\n\n"
+            "1. Pour chacun des 13 items, cochez « Oui » ou « Non » selon votre expérience.\n"
+            "2. Indiquez si ces symptômes sont apparus durant la même période.\n"
+            "3. Précisez dans quelle mesure ces symptômes ont été un problème pour vous.\n\n"
+            "Résultat positif : au moins 7 réponses « Oui » aux items 1-13, « Oui » à la question 2, "
+            "et un impact « Problème moyen » ou « Problème sérieux » à la question 3."
+        )
     
     def calculate_score(self, responses: Dict[str, Any]) -> Dict[str, Any]:
         """Calculate MDQ screen positivity
@@ -199,7 +212,7 @@ class MDQQuestionnaire:
         else:
             impairment_level = responses['rad_mdq3']
             # Moderate or serious problem required
-            moderate_impairment = impairment_level in ['Problème modéré', 'Problème sérieux']
+            moderate_impairment = impairment_level in ['Problème moyen', 'Problème modéré', 'Problème sérieux']
         
         if errors:
             return {

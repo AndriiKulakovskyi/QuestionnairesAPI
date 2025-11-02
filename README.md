@@ -331,7 +331,3 @@ QuestionnairesAPI/
 
 New questionnaires should be added to the `questionnaires/` directory and registered in `questionnaires/__init__.py`. The API will automatically detect and expose them.
 
-## License
-
-[Add your license here]
-

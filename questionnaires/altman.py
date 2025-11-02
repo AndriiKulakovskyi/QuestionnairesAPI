@@ -80,7 +80,7 @@ class AltmanQuestionnaire:
                     'b': "Je me sens parfois plus sûr(e) de moi que d'habitude",
                     'c': "Je me sens souvent plus sûr(e) de moi que d'habitude",
                     'd': "Je me sens plus sûr(e) de moi que d'habitude la plupart du temps",
-                    'e': "Je me sens extrêmement sûr de moi tout le temps"
+                    'e': "Je me sens extrêmement sûr(e) de moi tout le temps"
                 }
             },
             {
@@ -150,12 +150,12 @@ class AltmanQuestionnaire:
     def get_instructions(self) -> str:
         """Return the questionnaire instructions"""
         return (
-            "Consignes : Choisir la proposition dans chaque groupe qui correspond le mieux "
-            "à la manière dont vous vous êtes senti(e) la semaine dernière.\n\n"
-            "Veuillez noter :\n"
-            "- Le mot « parfois » utilisé ici signifie une ou deux fois\n"
-            "- « Souvent » signifie plusieurs fois\n"
-            "- « Fréquemment » signifie la plupart du temps"
+            "Consignes :\n\n"
+            "Choisir la proposition dans chaque groupe qui correspond le mieux à la manière dont vous vous êtes senti(e) la semaine dernière.\n\n"
+            "Veuillez noter :\n\n"
+            "Le mot « parfois » utilisé ici signifie une ou deux fois\n"
+            "« Souvent » signifie plusieurs fois\n"
+            "« Fréquemment » signifie la plupart du temps"
         )
     
     def calculate_score(self, responses: Dict[str, str]) -> Dict[str, Any]:

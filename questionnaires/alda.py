@@ -5,7 +5,11 @@ class AldaScaleQuestionnaire:
     """Alda Scale - Retrospective assessment of lithium response
     
     The Alda Scale assesses the quality of prophylactic response to lithium treatment
-    in patients with bipolar disorder. It consists of two criteria:
+    in patients with bipolar disorder. It consists of an initial screening question and
+    two criteria:
+    
+    **Question 0**: "Le patient est-il actuellement traité par lithium ?" (Oui/Non)
+    - If "Non", the questionnaire is not applicable and no score is computed.
     
     **Criterion A**: Degree of improvement (0-10 scale)
     - Assesses clinical improvement while on lithium
@@ -20,17 +24,27 @@ class AldaScaleQuestionnaire:
     - Lower scores indicate fewer confounding factors
     
     **Final Score**: A - B (minimum 0, maximum 10)
-    - Score ≥ 7: Excellent responder
-    - Score 4-6: Partial responder
-    - Score < 4: Non-responder
+    - Score ≥ 7: Répondeur au lithium
+    - Score 4-6: Réponse partielle
+    - Score < 4: Réponse insuffisante
     """
 
     def __init__(self):
         self.name = "Alda Scale - Lithium Response Assessment"
         self.description = "Évaluation rétrospective de la réponse au lithium dans le trouble bipolaire."
         self.used_in_applications = ['ebipolar']
+        self.screening_question = self._init_screening_question()
         self.criterion_a = self._init_criterion_a()
         self.criterion_b = self._init_criterion_b()
+
+    def _init_screening_question(self) -> Dict[str, Any]:
+        """Initialise the prerequisite lithium treatment question."""
+        return {
+            "id": "ALDA_ON_LITHIUM",
+            "text": "Le patient est-il actuellement traité par lithium ?",
+            "type": "yes_no",
+            "options": {"Oui": True, "Non": False}
+        }
 
     def _init_criterion_a(self) -> Dict[str, Any]:
         """Initialize Criterion A - degree of improvement."""
@@ -122,50 +136,88 @@ class AldaScaleQuestionnaire:
 
         Args:
             responses (Dict[str, int]): A dictionary of responses containing:
+                - "ALDA_ON_LITHIUM": "Oui" or "Non"
                 - "ALDA_A": Score for Criterion A (0-10)
                 - "ALDA_B1" through "ALDA_B5": Scores for Criterion B items (0-2 each)
 
         Returns:
             Dict[str, Any]: A dictionary containing scores and interpretation.
         """
+        errors: List[str] = []
+        screening = responses.get("ALDA_ON_LITHIUM")
+        if screening is None:
+            errors.append("Question préalable manquante: traitement actuel par lithium")
+        elif screening not in ("Oui", "Non"):
+            errors.append("La réponse à 'ALDA_ON_LITHIUM' doit être 'Oui' ou 'Non'")
+        elif screening == "Non":
+            return {
+                "valid": False,
+                "errors": [
+                    "Questionnaire non applicable: le patient n'est pas actuellement traité par lithium"
+                ],
+                "score_a": None,
+                "score_b": None,
+                "total_score": None,
+                "max_score": 10,
+                "b_scores": {},
+                "response_category": None,
+                "interpretation": "Le calcul du score Alda requiert un traitement en cours par lithium"
+            }
+
         # Validate Criterion A
-        if "ALDA_A" not in responses:
-            raise ValueError("Missing response for Criterion A (ALDA_A)")
-        
-        score_a = responses["ALDA_A"]
-        if not isinstance(score_a, int) or score_a < 0 or score_a > 10:
-            raise ValueError(f"Criterion A score must be an integer between 0 and 10, got {score_a}")
+        score_a = responses.get("ALDA_A")
+        if score_a is None:
+            errors.append("Critère A manquant (ALDA_A)")
+        elif not isinstance(score_a, int) or score_a < 0 or score_a > 10:
+            errors.append("Le score du critère A doit être un entier entre 0 et 10")
         
         # Validate and sum Criterion B
         score_b = 0
         b_scores = {}
         for item in self.criterion_b:
             item_id = item["id"]
-            if item_id not in responses:
-                raise ValueError(f"Missing response for {item_id}")
-            
-            item_score = responses[item_id]
+            item_score = responses.get(item_id)
+            if item_score is None:
+                errors.append(f"Réponse manquante pour {item_id}")
+                continue
             if not isinstance(item_score, int) or item_score < 0 or item_score > 2:
-                raise ValueError(f"{item_id} score must be an integer between 0 and 2, got {item_score}")
-            
+                errors.append(f"{item_id} doit être un entier entre 0 et 2")
+                continue
+
             b_scores[item_id] = item_score
             score_b += item_score
+
+        if errors:
+            return {
+                "valid": False,
+                "errors": errors,
+                "score_a": score_a if isinstance(score_a, int) and 0 <= score_a <= 10 else None,
+                "score_b": None,
+                "total_score": None,
+                "max_score": 10,
+                "b_scores": b_scores,
+                "response_category": None,
+                "interpretation": "Validation échouée"
+            }
         
         # Calculate final score (A - B, minimum 0)
+        assert isinstance(score_a, int)
         total_score = max(0, score_a - score_b)
         
         # Interpret response
         if total_score >= 7:
-            response_category = "Excellent responder"
+            response_category = "Répondeur au lithium"
             interpretation = "Réponse excellente au lithium (score ≥ 7)"
         elif total_score >= 4:
-            response_category = "Partial responder"
+            response_category = "Réponse partielle"
             interpretation = "Réponse partielle au lithium (score 4-6)"
         else:
-            response_category = "Non-responder"
+            response_category = "Réponse insuffisante"
             interpretation = "Réponse faible ou absente au lithium (score < 4)"
         
         return {
+            "valid": True,
+            "errors": [],
             "score_a": score_a,
             "score_b": score_b,
             "total_score": total_score,
@@ -177,21 +229,25 @@ class AldaScaleQuestionnaire:
 
     def get_random_responses(self) -> Dict[str, int]:
         """Generates random valid responses for testing purposes."""
-        responses = {"ALDA_A": random.randint(0, 10)}
+        responses = {
+            "ALDA_ON_LITHIUM": "Oui",
+            "ALDA_A": random.randint(0, 10)
+        }
         for item in self.criterion_b:
             responses[item["id"]] = random.randint(0, 2)
         return responses
 
-    def get_instruction(self) -> str:
+    def get_instructions(self) -> str:
         """Returns the full instruction text for the questionnaire."""
         return (
-            "CONSIGNES:\n\n"
-            + self.criterion_a["instruction"]
-            + "\n\n"
-            + "Le critère B est utilisé pour établir s'il y a une relation causale entre "
-            "l'amélioration clinique et le traitement. Coter 0, 1 ou 2 points pour chacun "
-            "des items suivants, où des scores plus élevés indiquent des facteurs confondants "
-            "plus importants:"
+            "CONSIGNES\n\n"
+            "Le patient est-il actuellement traité par lithium ? Répondre « Oui » ou « Non ».\n"
+            "Si la réponse est « Non », le questionnaire s'arrête ici.\n\n"
+            f"{self.criterion_a['instruction']}\n\n"
+            "CONSIGNES\n"
+            "Le critère B est utilisé pour établir s'il y a une relation causale entre l'amélioration "
+            "clinique et le traitement. Coter 0, 1 ou 2 points pour chacun des items suivants, où des "
+            "scores plus élevés indiquent des facteurs confondants plus importants."
         )
 
 
@@ -203,7 +259,7 @@ if __name__ == '__main__':
     print()
     print("="*80)
     print("INSTRUCTION:")
-    print(alda.get_instruction())
+    print(alda.get_instructions())
     print("="*80)
     print()
     

@@ -35,13 +35,13 @@ class MADRSQuestionnaire:
                         "Coter selon la profondeur et l'incapacité à se dérider."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Pas de tristesse.",
+                    0: "0 Pas de tristesse",
                     1: "1",
-                    2: "2 Semble découragé mais peut se dérider sans difficulté.",
+                    2: "2 Semble découragé mais peut se dérider sans difficulté",
                     3: "3",
-                    4: "4 Paraît triste et malheureux la plupart du temps.",
+                    4: "4 Paraît triste et malheureux la plupart du temps",
                     5: "5",
-                    6: "6 Semble malheureux tout le temps. Extrêmement découragé."
+                    6: "6 Semble malheureux tout le temps. Extrêmement découragé"
                 },
                 'required': True
             },
@@ -54,13 +54,13 @@ class MADRSQuestionnaire:
                         "influencée par les événements."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Tristesse occasionnelle en rapport avec les circonstances.",
+                    0: "0 Tristesse occasionnelle en rapport avec les circonstances",
                     1: "1",
-                    2: "2 Triste ou cafardeux, mais se déride sans difficulté.",
+                    2: "2 Triste ou cafardeux, mais se déride sans difficulté",
                     3: "3",
-                    4: "4 Sentiment envahissant de tristesse ou de dépression ; l'humeur est encore influencée par les circonstances extérieures.",
+                    4: "4 Sentiment envahissant de tristesse ou de dépression ; l'humeur est encore influencée par les circonstances extérieures",
                     5: "5",
-                    6: "6 Tristesse, désespoir ou découragement permanents ou sans fluctuations."
+                    6: "6 Tristesse, désespoir ou découragement permanents ou sans fluctuations"
                 },
                 'required': True
             },
@@ -72,13 +72,13 @@ class MADRSQuestionnaire:
                         "l'angoisse. Coter selon l'intensité, la fréquence, la durée, le degré de réassurance nécessaire."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Calme. Tension intérieure seulement passagère.",
+                    0: "0 Calme. Tension intérieure seulement passagère",
                     1: "1",
-                    2: "2 Sentiments occasionnels d'irritabilité et de malaise mal défini.",
+                    2: "2 Sentiments occasionnels d'irritabilité et de malaise mal défini",
                     3: "3",
-                    4: "4 Sentiments continuels de tension intérieure ou panique intermittente que le malade ne peut maîtriser qu'avec difficulté.",
+                    4: "4 Sentiments continuels de tension intérieure ou panique intermittente que le malade ne peut maîtriser qu'avec difficulté",
                     5: "5",
-                    6: "6 Effroi ou angoisse sans relâche. Panique envahissante."
+                    6: "6 Effroi ou angoisse sans relâche. Panique envahissante"
                 },
                 'required': True
             },
@@ -89,13 +89,13 @@ class MADRSQuestionnaire:
                         "sommeil par comparaison avec le sommeil du patient lorsqu'il n'est pas malade."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Dort comme d'habitude.",
+                    0: "0 Dort comme d'habitude",
                     1: "1",
-                    2: "2 Légère difficulté à s'endormir ou sommeil légèrement réduit, léger ou agité.",
+                    2: "2 Légère difficulté à s'endormir ou sommeil légèrement réduit, léger ou agité",
                     3: "3",
-                    4: "4 Sommeil réduit ou interrompu au moins deux heures.",
+                    4: "4 Sommeil réduit ou interrompu au moins deux heures",
                     5: "5",
-                    6: "6 Moins de deux ou trois heures de sommeil."
+                    6: "6 Moins de deux ou trois heures de sommeil"
                 },
                 'required': True
             },
@@ -106,13 +106,13 @@ class MADRSQuestionnaire:
                         "l'appétit habituel. Coter l'absence de désir de nourriture ou le besoin de se forcer pour manger."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Appétit normal ou augmenté.",
+                    0: "0 Appétit normal ou augmenté",
                     1: "1",
-                    2: "2 Appétit légèrement réduit.",
+                    2: "2 Appétit légèrement réduit",
                     3: "3",
-                    4: "4 Pas d'appétit. Nourriture sans goût.",
+                    4: "4 Pas d'appétit. Nourriture sans goût",
                     5: "5",
-                    6: "6 Ne mange que si on le persuade."
+                    6: "6 Ne mange que si on le persuade"
                 },
                 'required': True
             },
@@ -123,13 +123,13 @@ class MADRSQuestionnaire:
                         "jusqu'à l'incapacité à se concentrer. Coter l'intensité, la fréquence et le degré d'incapacité."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Pas de difficultés de concentration.",
+                    0: "0 Pas de difficultés de concentration",
                     1: "1",
-                    2: "2 Difficultés occasionnelles à rassembler ses pensées.",
+                    2: "2 Difficultés occasionnelles à rassembler ses pensées",
                     3: "3",
-                    4: "4 Difficultés à se concentrer et à maintenir son attention, ce qui réduit la capacité à lire ou à soutenir une conversation.",
+                    4: "4 Difficultés à se concentrer et à maintenir son attention, ce qui réduit la capacité à lire ou à soutenir une conversation",
                     5: "5",
-                    6: "6 Incapable de lire ou de converser sans grande difficulté."
+                    6: "6 Incapable de lire ou de converser sans grande difficulté"
                 },
                 'required': True
             },
@@ -140,13 +140,13 @@ class MADRSQuestionnaire:
                         "et à accomplir les activités quotidiennes."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Guère de difficultés à se mettre en route. Pas de lenteur.",
+                    0: "0 Guère de difficultés à se mettre en route. Pas de lenteur",
                     1: "1",
-                    2: "2 Difficultés à commencer des activités.",
+                    2: "2 Difficultés à commencer des activités",
                     3: "3",
-                    4: "4 Difficultés à commencer des activités routinières qui sont poursuivies avec effort.",
+                    4: "4 Difficultés à commencer des activités routinières qui sont poursuivies avec effort",
                     5: "5",
-                    6: "6 Grande lassitude. Incapable de faire quoi que ce soit sans aide."
+                    6: "6 Grande lassitude. Incapable de faire quoi que ce soit sans aide"
                 },
                 'required': True
             },
@@ -158,13 +158,13 @@ class MADRSQuestionnaire:
                         "à réagir avec une émotion appropriée aux circonstances ou aux gens est réduite."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Intérêt normal pour le monde environnant et pour les gens.",
+                    0: "0 Intérêt normal pour le monde environnant et pour les gens",
                     1: "1",
-                    2: "2 Capacité réduite à prendre du plaisir à ses intérêts habituels.",
+                    2: "2 Capacité réduite à prendre du plaisir à ses intérêts habituels",
                     3: "3",
-                    4: "4 Perte d'intérêt pour le monde environnant. Perte de sentiment pour les amis et les connaissances.",
+                    4: "4 Perte d'intérêt pour le monde environnant. Perte de sentiment pour les amis et les connaissances",
                     5: "5",
-                    6: "6 Sentiment d'être paralysé émotionnellement, incapacité à ressentir de la colère, du chagrin ou du plaisir et impossibilité complète ou même douloureuse de ressentir quelque chose pour les proches parents et amis."
+                    6: "6 Sentiment d'être paralysé émotionnellement, incapacité à ressentir de la colère, du chagrin ou du plaisir et impossibilité complète ou même douloureuse de ressentir quelque chose pour les proches parents et amis"
                 },
                 'required': True
             },
@@ -175,13 +175,13 @@ class MADRSQuestionnaire:
                         "de pêché, de remords ou de ruine."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Pas de pensée pessimiste.",
+                    0: "0 Pas de pensée pessimiste",
                     1: "1",
-                    2: "2 Idées intermittentes d'échec, d'auto-accusation ou d'autodépréciation.",
+                    2: "2 Idées intermittentes d'échec, d'auto-accusation ou d'auto-dépréciation",
                     3: "3",
-                    4: "4 Auto-accusations persistantes ou idées de culpabilité ou péché précises mais encore rationnelles. Pessimisme croissant à propos du futur.",
+                    4: "4 Auto-accusations persistantes ou idées de culpabilité ou péché précises mais encore rationnelles. Pessimisme croissant à propos du futur",
                     5: "5",
-                    6: "6 Idées délirantes de ruine, de remords ou péché inexpiable. Auto-accusations absurdes ou inébranlables."
+                    6: "6 Idées délirantes de ruine, de remords ou péché inexpiable. Auto-accusations absurdes ou inébranlables"
                 },
                 'required': True
             },
@@ -193,13 +193,13 @@ class MADRSQuestionnaire:
                         "Les tentatives de suicide ne doivent pas, en elles-mêmes, influencer la cotation."),
                 'type': 'radio',
                 'options': {
-                    0: "0 Jouit de la vie ou la prend comme elle vient.",
+                    0: "0 Jouit de la vie ou la prend comme elle vient",
                     1: "1",
-                    2: "2 Fatigué de la vie, idées de suicide seulement passagères.",
+                    2: "2 Fatigué de la vie, idées de suicide seulement passagères",
                     3: "3",
-                    4: "4 Il vaudrait mieux être mort. Les idées de suicide sont courantes et le suicide est considéré comme une solution possible mais sans projet ou intention précis.",
+                    4: "4 Il vaudrait mieux être mort. Les idées de suicide sont courantes et le suicide est considéré comme une solution possible mais sans projet ou intention précis",
                     5: "5",
-                    6: "6 Projets explicites de suicide si l'occasion se présente. Préparatifs de suicide."
+                    6: "6 Projets explicites de suicide si l'occasion se présente. Préparatifs de suicide"
                 },
                 'required': True
             }
@@ -207,6 +207,19 @@ class MADRSQuestionnaire:
         
         return questions
     
+    def get_instructions(self) -> str:
+        """Return the MADRS questionnaire instructions"""
+        return (
+            "CONSIGNES\n\n"
+            "La cotation doit se fonder sur l'entretien clinique allant de questions générales sur les symptômes "
+            "à des questions plus précises qui permettent une cotation exacte de la sévérité. Le cotateur doit "
+            "décider si la note est à un point nettement défini de l'échelle (0, 2, 4, 6) ou à un point intermédiaire "
+            "(1, 3, 5). Il est rare qu'un patient déprimé ne puisse pas être coté sur les items de l'échelle. Si des "
+            "réponses précises ne peuvent être obtenues du malade, toutes les indications pertinentes et les "
+            "informations d'autres sources doivent être utilisées comme base de la cotation en accord avec la "
+            "clinique. Cocher pour chaque item la case qui correspond au chiffre le plus adéquat."
+        )
+
     def validate_responses(self, responses: Dict[str, int]) -> Dict[str, List[str]]:
         """Validate responses and return any errors
         
