@@ -1,0 +1,690 @@
+---
+description: Guidelines for implementing psychiatric questionnaires with complex branching logic, subscales, and clinical validation
+alwaysApply: false
+---
+
+# Cursor Rules for Psychiatric Questionnaire Implementation
+
+## Overview
+
+Guidelines for implementing psychiatric questionnaires with complex branching logic, subscales, and clinical validation.
+
+## Core Principles
+
+### 1. Separation of Concerns
+
+- **Data Structure**: Questions, scoring logic, and interpretation rules separated
+- **Validation Layer**: Independent validation before scoring
+- **Branching Logic**: Explicit conditional flow management
+- **Clinical Logic**: Separate from technical implementation
+
+### 2. Questionnaire Class Architecture
+
+```python
+class BaseQuestionnaire(ABC):
+    """Base class for all psychiatric questionnaires"""
+    
+    def __init__(self):
+        self.name: str
+        self.version: str  # e.g., "DSM-5", "ICD-11"
+        self.description: str
+        self.reference: str  # Original publication
+        self.target_population: List[str]
+        self.administration_time: str  # e.g., "5-10 minutes"
+        self.questions: List[Question]
+        self.subscales: Dict[str, Subscale] = {}
+        self.branching_rules: List[BranchingRule] = []
+        self.cutoffs: Dict[str, CutoffCriteria] = {}
+        
+    @abstractmethod
+    def get_instructions(self) -> str:
+        """Return administration instructions"""
+        
+    @abstractmethod
+    def calculate_score(self, responses: Dict) -> ScoreResult:
+        """Calculate all scores and subscales"""
+        
+    @abstractmethod
+    def get_next_question(self, responses: Dict) -> Optional[Question]:
+        """Determine next question based on branching logic"""
+```
+
+### 3. Question Model
+
+```python
+@dataclass
+class Question:
+    """Individual question with metadata"""
+    id: str  # Unique identifier (e.g., 'phq9_q1')
+    number: int  # Display order
+    text: str  # Question text
+    domain: str  # Clinical domain (e.g., 'mood', 'anxiety')
+    response_type: ResponseType  # LIKERT, BINARY, MULTIPLE_CHOICE, etc.
+    options: List[ResponseOption]
+    
+    # Branching logic
+    triggers_branching: bool = False
+    branching_conditions: List[BranchingCondition] = field(default_factory=list)
+    
+    # Clinical metadata
+    dsm_criteria: Optional[str] = None  # Maps to DSM-5 criterion
+    reverse_scored: bool = False
+    required: bool = True
+    
+    # Validation
+    validation_rules: List[ValidationRule] = field(default_factory=list)
+
+@dataclass
+class ResponseOption:
+    """Individual response option"""
+    value: str  # Internal value (e.g., 'a', '0', 'yes')
+    label: str  # Display text
+    score: Union[int, float]  # Numeric score for this option
+    triggers_followup: bool = False  # Does this trigger sub-questions?
+```
+
+### 4. Branching Logic System
+
+```python
+class BranchingRule:
+    """Defines conditional question flow"""
+    
+    def __init__(self, 
+                 condition_question_id: str,
+                 condition_values: List[str],  # Values that trigger branching
+                 action: BranchingAction,  # SHOW, SKIP, JUMP_TO
+                 target_question_ids: List[str]):
+        self.condition_question_id = condition_question_id
+        self.condition_values = condition_values
+        self.action = action
+        self.target_question_ids = target_question_ids
+    
+    def evaluate(self, responses: Dict) -> bool:
+        """Check if branching condition is met"""
+        if self.condition_question_id not in responses:
+            return False
+        response = responses[self.condition_question_id]
+        return response in self.condition_values
+
+class BranchingEngine:
+    """Manages complex branching logic"""
+    
+    def __init__(self, rules: List[BranchingRule]):
+        self.rules = rules
+        self.rule_graph = self._build_dependency_graph()
+    
+    def get_active_questions(self, responses: Dict, 
+                            all_questions: List[Question]) -> List[Question]:
+        """Return questions that should be shown based on responses"""
+        active = set(q.id for q in all_questions if q.required)
+        
+        for rule in self.rules:
+            if rule.evaluate(responses):
+                if rule.action == BranchingAction.SHOW:
+                    active.update(rule.target_question_ids)
+                elif rule.action == BranchingAction.SKIP:
+                    active.difference_update(rule.target_question_ids)
+        
+        return [q for q in all_questions if q.id in active]
+```
+
+### 4a. JSONLogic Branching (Advanced)
+
+Branching logic determines what to display/require/calculate based on already-given responses. It's "if...then..." logic applied to questions, sections, and options.
+
+#### Where to Use Branching Logic
+
+1. **`display_if`**: Show/hide a question or section
+2. **`required_if`**: Make a question required conditionally
+3. **`enable_if` / `disable_if`**: Enable/disable an option (in a response list)
+4. **In `scoring.formula`**: Calculate conditional scores
+
+All these keys take a JSONLogic expression evaluated against the context:
+```json
+{ "answers": { "q1": <value>, "q2": <value>, ... } }
+```
+
+Example: Access the answer to q3: `{"var": "answers.q3"}`
+
+#### JSONLogic Mini-Reference
+
+| Operation | Syntax |
+|-----------|--------|
+| Equality | `{"==": [A, B]}` |
+| Greater/Less | `{">=": [A, B]}`, `{"<": [A, B]}` |
+| AND / OR | `{"and": [cond1, cond2]}`, `{"or": [cond1, cond2]}` |
+| Ternary (if/then/else) | `{"if": [cond, value_if_true, value_if_false]}` |
+| Variable access | `{"var": "answers.q1"}` |
+| In array | `{"in": [value, array]}` |
+
+#### Practical Examples
+
+**A. Display sub-question if item score is high**
+
+Show q3a only if q3 ≥ 3:
+```json
+{
+  "id": "q3a",
+  "text": "Please describe the symptoms",
+  "display_if": {
+    ">=": [
+      {"var": "answers.q3"},
+      3
+    ]
+  }
+}
+```
+
+**B. Make question required based on previous answer**
+
+q5_comment becomes required if q5 == 4:
+```json
+{
+  "id": "q5_comment",
+  "text": "Please explain",
+  "required_if": {
+    "==": [
+      {"var": "answers.q5"},
+      4
+    ]
+  }
+}
+```
+
+**C. Enable option only if another question has a value**
+
+In q2, the "Other (specify)" option is only clickable if q1 == "yes":
+```json
+{
+  "id": "q2",
+  "options": [
+    {
+      "code": "other",
+      "label": "Other (specify)",
+      "score": 0,
+      "enable_if": {
+        "==": [
+          {"var": "answers.q1"},
+          "yes"
+        ]
+      }
+    }
+  ]
+}
+```
+
+**D. Display entire section if two conditions are true**
+
+"Mania Screening" section visible if q1 ≥ 3 AND q4 ≥ 3:
+```json
+{
+  "id": "mania_section",
+  "display_if": {
+    "and": [
+      {">=": [{"var": "answers.q1"}, 3]},
+      {">=": [{"var": "answers.q4"}, 3]}
+    ]
+  }
+}
+```
+
+**E. Conditional calculation in scoring**
+
+Bonus of +2 if q3 ≥ 3, otherwise 0:
+```json
+{
+  "formula": {
+    "+": [
+      {
+        "reduce": [
+          ["q1", "q2", "q3", "q4", "q5"],
+          {
+            "+": [
+              {"var": "accumulator"},
+              {"var": ["answers.", {"var": "current"}]}
+            ]
+          },
+          0
+        ]
+      },
+      {
+        "if": [
+          {">=": [{"var": "answers.q3"}, 3]},
+          2,
+          0
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### Python Implementation
+
+```python
+import json_logic
+
+class JSONLogicBranchingEngine:
+    """Evaluates JSONLogic conditions for branching"""
+    
+    def __init__(self):
+        self.context = {"answers": {}}
+    
+    def update_context(self, responses: Dict[str, Any]):
+        """Update the evaluation context with current responses"""
+        self.context["answers"] = responses
+    
+    def evaluate(self, condition: Dict) -> bool:
+        """Evaluate a JSONLogic condition"""
+        if not condition:
+            return True
+        return json_logic.jsonLogic(condition, self.context)
+    
+    def should_display(self, question: Question, responses: Dict) -> bool:
+        """Check if question should be displayed"""
+        self.update_context(responses)
+        if hasattr(question, 'display_if') and question.display_if:
+            return self.evaluate(question.display_if)
+        return True
+    
+    def is_required(self, question: Question, responses: Dict) -> bool:
+        """Check if question is required"""
+        self.update_context(responses)
+        # Base requirement
+        if question.required:
+            return True
+        # Conditional requirement
+        if hasattr(question, 'required_if') and question.required_if:
+            return self.evaluate(question.required_if)
+        return False
+    
+    def is_option_enabled(self, option: ResponseOption, responses: Dict) -> bool:
+        """Check if option should be enabled"""
+        self.update_context(responses)
+        if hasattr(option, 'enable_if') and option.enable_if:
+            return self.evaluate(option.enable_if)
+        if hasattr(option, 'disable_if') and option.disable_if:
+            return not self.evaluate(option.disable_if)
+        return True
+    
+    def calculate_conditional_score(self, formula: Dict, responses: Dict) -> float:
+        """Calculate score using JSONLogic formula"""
+        self.update_context(responses)
+        return json_logic.jsonLogic(formula, self.context)
+```
+
+#### UI and Validation Impact
+
+**Display Logic:**
+- Before displaying a question/section/option, evaluate `display_if`/`enable_if`
+- If `true` → show/enable
+- If `false` → hide/disable
+
+**Validation:**
+- On submission, evaluate `required_if`
+- If `true` and answer missing → blocking error
+- Rules can chain (sub-questions can have their own conditions)
+
+**Execution Flow:**
+1. User answers q3
+2. Engine re-evaluates all conditions:
+   - `q3a.display_if` becomes `true` if q3 ≥ 3 → q3a appears
+3. If user sets q5 = 4 → `q5_comment.required_if = true` → field becomes required
+4. At the end, scoring can weight or filter using same conditions
+
+#### Anti-Patterns to Avoid
+
+1. **Redundant conditions**: Multiple redundant conditions on same question (use one well-structured rule)
+2. **Free text in conditions**: Always use `answers.qid`, not free text
+3. **Inconsistent logic**: A hidden question should not be marked "required" without `required_if`
+4. **Circular dependencies**: q1 depends on q2, q2 depends on q1
+5. **Missing null checks**: Always handle cases where referenced answers don't exist yet
+
+#### Complex Example: DSM-5 Depression Module
+
+```python
+@dataclass
+class Question:
+    id: str
+    text: str
+    options: List[ResponseOption]
+    display_if: Optional[Dict] = None
+    required_if: Optional[Dict] = None
+
+# Screening question
+q1 = Question(
+    id="depression_screener",
+    text="Have you felt depressed or hopeless in the past 2 weeks?",
+    options=[
+        ResponseOption(value="yes", label="Yes", score=1),
+        ResponseOption(value="no", label="No", score=0)
+    ]
+)
+
+# Follow-up only shown if screening is positive
+q2 = Question(
+    id="depression_frequency",
+    text="How often have you felt this way?",
+    options=[
+        ResponseOption(value="daily", label="Nearly every day", score=3),
+        ResponseOption(value="often", label="More than half the days", score=2),
+        ResponseOption(value="sometimes", label="Several days", score=1)
+    ],
+    display_if={"==": [{"var": "answers.depression_screener"}, "yes"]},
+    required_if={"==": [{"var": "answers.depression_screener"}, "yes"]}
+)
+
+# Optional comment, only required if severe
+q3 = Question(
+    id="depression_comment",
+    text="Please describe your symptoms",
+    options=[ResponseOption(value="text", label="", score=0)],
+    display_if={"==": [{"var": "answers.depression_screener"}, "yes"]},
+    required_if={"==": [{"var": "answers.depression_frequency"}, "daily"]}
+)
+```
+
+### 5. Subscale Management
+
+```python
+@dataclass
+class Subscale:
+    """Subscale or dimension of questionnaire"""
+    name: str
+    description: str
+    question_ids: List[str]
+    scoring_method: ScoringMethod  # SUM, MEAN, WEIGHTED, CUSTOM
+    score_range: Tuple[float, float]
+    cutoffs: Dict[str, CutoffCriteria]
+    
+    # Clinical interpretation
+    clinical_domain: str  # e.g., "somatic symptoms", "cognitive symptoms"
+    dsm_mapping: Optional[str] = None
+
+class ScoringEngine:
+    """Handles all scoring calculations"""
+    
+    def __init__(self, questionnaire: BaseQuestionnaire):
+        self.questionnaire = questionnaire
+    
+    def calculate_subscale(self, subscale: Subscale, 
+                          responses: Dict) -> SubscaleResult:
+        """Calculate score for one subscale"""
+        scores = []
+        for q_id in subscale.question_ids:
+            if q_id in responses:
+                question = self._get_question(q_id)
+                option = self._get_option(question, responses[q_id])
+                score = option.score
+                if question.reverse_scored:
+                    score = self._reverse_score(score, question)
+                scores.append(score)
+        
+        if subscale.scoring_method == ScoringMethod.SUM:
+            total = sum(scores)
+        elif subscale.scoring_method == ScoringMethod.MEAN:
+            total = sum(scores) / len(scores) if scores else 0
+        
+        return SubscaleResult(
+            name=subscale.name,
+            score=total,
+            interpretation=self._interpret(total, subscale.cutoffs),
+            missing_items=len(subscale.question_ids) - len(scores)
+        )
+```
+
+### 6. Validation System
+
+```python
+class ValidationEngine:
+    """Validates responses before scoring"""
+    
+    def validate_responses(self, responses: Dict, 
+                          active_questions: List[Question]) -> ValidationResult:
+        """Comprehensive validation"""
+        errors = []
+        warnings = []
+        
+        # Check required questions
+        for question in active_questions:
+            if question.required and question.id not in responses:
+                errors.append(f"Missing required: {question.id}")
+        
+        # Check response validity
+        for q_id, response in responses.items():
+            question = self._get_question(q_id)
+            if not self._is_valid_response(question, response):
+                errors.append(f"Invalid response for {q_id}: {response}")
+        
+        # Check missing data threshold
+        total_required = len([q for q in active_questions if q.required])
+        total_answered = len(responses)
+        if total_required > 0:
+            completion_rate = total_answered / total_required
+            if completion_rate < 0.8:  # Less than 80% complete
+                warnings.append(f"Low completion rate: {completion_rate:.1%}")
+        
+        return ValidationResult(
+            valid=len(errors) == 0,
+            errors=errors,
+            warnings=warnings,
+            completion_rate=completion_rate
+        )
+```
+
+### 7. Clinical Interpretation
+
+```python
+@dataclass
+class CutoffCriteria:
+    """Clinical cutoff with evidence"""
+    threshold: float
+    comparison: Comparison  # GTE, GT, LTE, LT, RANGE
+    severity: SeverityLevel  # NONE, MINIMAL, MILD, MODERATE, SEVERE
+    interpretation: str
+    
+    # Psychometric properties
+    sensitivity: Optional[float] = None
+    specificity: Optional[float] = None
+    ppv: Optional[float] = None  # Positive predictive value
+    npv: Optional[float] = None  # Negative predictive value
+    reference: Optional[str] = None  # Study/publication
+
+class ClinicalInterpreter:
+    """Generates clinical interpretations"""
+    
+    def interpret(self, score_result: ScoreResult) -> ClinicalInterpretation:
+        """Generate comprehensive interpretation"""
+        return ClinicalInterpretation(
+            total_score_interpretation=self._interpret_total(score_result),
+            subscale_interpretations=self._interpret_subscales(score_result),
+            severity_level=self._determine_severity(score_result),
+            clinical_recommendations=self._generate_recommendations(score_result),
+            flags=self._identify_critical_items(score_result),
+            diagnostic_considerations=self._map_to_diagnostic_criteria(score_result)
+        )
+```
+
+## Implementation Guidelines
+
+### File Structure
+```
+QuestionnairesAPI/
+├── api/
+│   ├── __init__.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── questionnaires.py    # Main API endpoints
+│   │   └── scoring.py           # Scoring endpoints
+│   └── schemas/
+│       ├── __init__.py
+│       └── responses.py         # API response models
+├── questionnaires/
+│   ├── __init__.py
+│   ├── base/
+│   │   ├── __init__.py
+│   │   ├── questionnaire.py     # BaseQuestionnaire
+│   │   ├── question.py          # Question models
+│   │   ├── branching.py         # Branching logic
+│   │   ├── scoring.py           # Scoring engine
+│   │   ├── validation.py        # Validation engine
+│   │   └── interpretation.py    # Clinical interpretation
+│   │
+│   ├── qids/                    # Quick Inventory of Depressive Symptomatology
+│   │   ├── __init__.py
+│   │   └── qids.py
+│   │
+│   ├── altman/                  # Altman Self-Rating Mania Scale (ASRM)
+│   │   ├── __init__.py
+│   │   └── altman.py
+│   │
+│   ├── phq9/                    # Patient Health Questionnaire-9
+│   │   ├── __init__.py
+│   │   └── phq9.py
+│   │
+│   ├── gad7/                    # Generalized Anxiety Disorder-7
+│   │   ├── __init__.py
+│   │   └── gad7.py
+│   │
+│   ├── mdq/                     # Mood Disorder Questionnaire
+│   │   ├── __init__.py
+│   │   └── mdq.py
+│   │
+│   ├── ymrs/                    # Young Mania Rating Scale
+│   │   ├── __init__.py
+│   │   └── ymrs.py
+│   │
+│   ├── madrs/                   # Montgomery-Åsberg Depression Rating Scale
+│   │   ├── __init__.py
+│   │   └── madrs.py
+│   │
+│   ├── bdi/                     # Beck Depression Inventory
+│   │   ├── __init__.py
+│   │   └── bdi.py
+│   │
+│   ├── hads/                    # Hospital Anxiety and Depression Scale
+│   │   ├── __init__.py
+│   │   └── hads.py
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       ├── enums.py             # All enums
+│       ├── dataclasses.py       # Shared data structures
+│       └── constants.py         # Shared constants
+│
+└── tests/
+    ├── __init__.py
+    ├── test_base/
+    │   ├── test_questionnaire.py
+    │   ├── test_branching.py
+    │   ├── test_scoring.py
+    │   └── test_validation.py
+    │
+    ├── test_qids/
+    │   └── test_qids.py
+    │
+    ├── test_altman/
+    │   └── test_altman.py
+    │
+    ├── test_phq9/
+    │   └── test_phq9.py
+    │
+    ├── test_gad7/
+    │   └── test_gad7.py
+    │
+    └── test_integration/
+        └── test_api.py
+```
+
+### Naming Conventions
+
+- **Question IDs**: `{scale}_{domain}_q{number}` (e.g., `phq9_mood_q1`)
+- **Subscale names**: Descriptive, lowercase with underscores (e.g., `somatic_symptoms`)
+- **Response values**: Consistent within scale (e.g., always 'a'-'e' for 5-point, or '0'-'4')
+
+### Documentation Requirements
+
+Every questionnaire must include:
+```python
+"""
+{Questionnaire Full Name} ({Acronym})
+
+Clinical Purpose: {Brief description}
+Target Population: {Who should complete this}
+Administration Time: {Typical completion time}
+
+Scoring:
+- Total Range: {min-max}
+- Subscales: {List if applicable}
+- Cutoffs: {Clinical thresholds with evidence}
+
+Psychometric Properties:
+- Reliability (Cronbach's α): {value}
+- Test-retest reliability: {value if available}
+- Validity: {Brief summary}
+
+Reference:
+{Full citation of original paper}
+
+Clinical Notes:
+{Any special considerations for interpretation}
+"""
+```
+
+### Testing Strategy
+
+```python
+class TestQuestionnaire(unittest.TestCase):
+    """Test suite for each questionnaire"""
+    
+    def test_basic_scoring(self):
+        """Test standard scoring without branching"""
+        
+    def test_branching_logic(self):
+        """Test conditional question flow"""
+        
+    def test_subscale_calculation(self):
+        """Test subscale scoring"""
+        
+    def test_missing_data_handling(self):
+        """Test partial completion scenarios"""
+        
+    def test_clinical_interpretation(self):
+        """Test cutoff-based interpretations"""
+        
+    def test_edge_cases(self):
+        """Test boundary conditions"""
+```
+
+## Best Practices
+
+1. **Immutability**: Question definitions should be immutable after initialization
+2. **Type Safety**: Use type hints and dataclasses throughout
+3. **Validation First**: Always validate before scoring
+4. **Clear Errors**: Provide specific, actionable error messages
+5. **Clinical Accuracy**: Include references for all cutoffs and interpretations
+6. **Extensibility**: Design for easy addition of new scales
+7. **Testing**: 100% coverage for scoring logic
+8. **Documentation**: Clinical context for every interpretation
+
+## Common Patterns
+
+### Pattern 1: Simple Linear Scale (No Branching)
+
+Use when: Fixed set of questions, straightforward summing
+Example: PHQ-9, GAD-7, Altman
+
+### Pattern 2: Conditional Sub-Questions
+
+Use when: Follow-up questions depend on screening item
+Example: SCID modules, MINI sections
+
+### Pattern 3: Algorithmic Scoring
+
+Use when: Diagnosis based on criteria combinations
+Example: DSM-5 diagnostic questionnaires
+
+### Pattern 4: Weighted Subscales
+
+Use when: Different domains have different clinical weights
+Example: PANSS, BPRS
