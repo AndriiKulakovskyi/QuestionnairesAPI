@@ -17,10 +17,40 @@
     - ALDA - OK
     - YMRS - OK
     - CGI-EGF - OK
-  - Questionnaire Etat du patient
-    - Episode dépressif majeur actuel
-    - Episode maniaque actuel
-    - FAST
-    - WAIS-IV
+    - Questionnaire Etat du patient - NOK
+    - Episode dépressif majeur actuel - NOK
+    - Episode maniaque actuel - NOK
+    - FAST - OK
+    - WAIS-IV - OK (but to be verified again)
+    - WAIS-III - OK (but to be verified again)
+  - Evaluation Médicale
+    - DSM5
+    - C-SSRS
+    - Suicide
+    - Antécédents familiaux
+    - Histoire somatique
+  - Autoquestionnaires - ETAT
+    - EQ-5D
+    - PRISE-M
+    - STAY-A
+    - MARS
+    - MATHYS
+    - ALTMAN
+    - QIDS-SR16  (already in screening?)
+    - PSQI
+    - EPWORTH
+  - Bilan social
+  - Autoquestionnaires - TRAITS
+    - ASRS
+    - CTQ
+    - BIS-10
+    - ALS
+    - AIM
+    - WURS
+    - AQ-12
+    - CSM
+    - Inventaire du type circadien
+
+
 
 - V1

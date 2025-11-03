@@ -39,6 +39,17 @@ class FASTQuestionnaire:
         self.used_in_applications = ["ebipolar", "eschizo", "cedr"]
         self.domains = self._init_domains()
         
+    def get_instructions(self) -> str:
+        """Return administration instructions"""
+        return (
+            "Consignes :\n"
+            "Évaluer les difficultés rencontrées par le patient au cours des quinze derniers jours dans chaque "
+            "situation décrite. Attribuer 0 lorsqu'aucune difficulté n'est observée, 1 pour une difficulté légère, 2 "
+            "pour une difficulté modérée et 3 pour une difficulté sévère nécessitant de l'aide. Additionner les scores "
+            "de chaque domaine pour obtenir les sous-scores, puis sommer l'ensemble pour obtenir le score total FAST. "
+            "Un score total ≥ 12 indique un dysfonctionnement fonctionnel significatif."
+        )
+
     def _init_domains(self) -> Dict[str, Dict[str, Any]]:
         """Initialize all 6 FAST domains with their items"""
         
@@ -160,32 +171,32 @@ class FASTQuestionnaire:
                 'score_field': 'fast_int',
                 'items': [
                     {
-                        'id': 'rad_rerlations_conserve',
+                        'id': 'rad_relations_conserve',
                         'text': "Conserver des amitiés",
                         'options': response_options
                     },
                     {
-                        'id': 'rad_rerlations_participe',
+                        'id': 'rad_relations_participe',
                         'text': "Participer à des activités sociales",
                         'options': response_options
                     },
                     {
-                        'id': 'rad_rerlations_bonnes',
+                        'id': 'rad_relations_bonnes',
                         'text': "Avoir de bonnes relations avec vos proches",
                         'options': response_options
                     },
                     {
-                        'id': 'rad_rerlations_habiter',
+                        'id': 'rad_relations_habiter',
                         'text': "Habiter avec votre famille",
                         'options': response_options
                     },
                     {
-                        'id': 'rad_rerlations_sexualite',
+                        'id': 'rad_relations_sexualite',
                         'text': "Avoir des relations sexuelles satisfaisantes",
                         'options': response_options
                     },
                     {
-                        'id': 'rad_rerlations_interet',
+                        'id': 'rad_relations_interet',
                         'text': "Être capable de défendre vos intérêts",
                         'options': response_options
                     }
