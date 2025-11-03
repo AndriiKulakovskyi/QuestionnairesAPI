@@ -1,6 +1,6 @@
 # Questionnaires API
 
-A Python implementation of psychiatric questionnaires (QIDS-SR16, MDQ, ASRM, and Epworth) designed for FastAPI integration.
+A Python implementation of clinical questionnaires (QIDS-SR16, MDQ, ASRM, Epworth, and EQ-5D-EL) designed for FastAPI integration.
 
 ## Questionnaires Included
 
@@ -37,6 +37,13 @@ A Python implementation of psychiatric questionnaires (QIDS-SR16, MDQ, ASRM, and
   - 0-10: Normal sleepiness
   - 11-24: Excessive daytime sleepiness (EDS)
 
+### 5. EQ-5D-EL (EuroQol 5 Dimensions 5 Levels)
+- **Purpose**: Generic measure of health-related quality of life
+- **Language**: French (fr-FR)
+- **Structure**: 5 dimensions (1-5 scale) + Visual Analog Scale (0-100)
+- **Output**: Health state profile (e.g., "21341") + VAS score
+- **Dimensions**: Mobility, Self-care, Usual activities, Pain/Discomfort, Anxiety/Depression
+
 ## Installation
 
 ```bash
@@ -65,19 +72,21 @@ QuestionnairesAPI/
 ### Basic Usage
 
 ```python
-from questionnaires import QIDSSR16, MDQ, ASRM, Epworth
+from questionnaires import QIDSSR16, MDQ, ASRM, Epworth, EQ5DEL
 
 # Initialize questionnaires
 qids = QIDSSR16()
 mdq = MDQ()
 asrm = ASRM()
 epworth = Epworth()
+eq5d = EQ5DEL()
 
 # Get questionnaire structure (for frontend)
 qids_data = qids.get_full_questionnaire()
 mdq_data = mdq.get_full_questionnaire()
 asrm_data = asrm.get_full_questionnaire()
 epworth_data = epworth.get_full_questionnaire()
+eq5d_data = eq5d.get_full_questionnaire()
 
 # Calculate depression score
 answers_qids = {f"q{i}": 0 for i in range(1, 17)}
@@ -99,6 +108,12 @@ print(f"Score: {result_asrm.total_score}, Probability: {result_asrm.probability}
 answers_epworth = {f"q{i}": 1 for i in range(1, 9)}
 result_epworth = epworth.calculate_score(answers_epworth)
 print(f"Score: {result_epworth.total_score}, Severity: {result_epworth.severity}")
+
+# Assess health-related quality of life
+answers_eq5d = {f"q{i}": 2 for i in range(1, 6)}
+answers_eq5d['vas'] = 75
+result_eq5d = eq5d.calculate_score(answers_eq5d)
+print(f"Profile: {result_eq5d.profile}, VAS: {result_eq5d.vas_score}")
 ```
 
 ### FastAPI Integration
@@ -262,9 +277,10 @@ See [TESTING.md](TESTING.md) for detailed testing documentation.
 - **QIDS-SR16**: 44 test cases covering metadata, validation, scoring, and edge cases
 - **MDQ**: 53 test cases covering metadata, validation, screening, and clinical scenarios
 - **ASRM**: 45 test cases covering metadata, validation, scoring, and manic symptom patterns
-- **Epworth**: 40+ test cases covering metadata, validation, scoring, and sleepiness patterns
+- **Epworth**: 54 test cases covering metadata, validation, scoring, and sleepiness patterns
+- **EQ-5D-EL**: 50+ test cases covering metadata, validation, profile calculation, and health states
 - **Expected coverage**: >95%
-- **Execution time**: <6 seconds
+- **Execution time**: <7 seconds
 
 ### Running Examples
 
@@ -299,6 +315,14 @@ python example_usage.py
 - 8 scored items (situations), 1 optional timing question (not scored)
 - High scores in driving situations trigger safety warnings
 
+### EQ-5D-EL
+- Reference period: TODAY (AUJOURD'HUI)
+- Generates 5-digit health state profile (11111-55555)
+- Each dimension scored 1-5 (Mobility, Self-care, Usual activities, Pain/Discomfort, Anxiety/Depression)
+- VAS: 0-100 (self-rated health)
+- Index calculation requires EQ-5D-EL Crosswalk table (France value set)
+- Warns about profile-VAS inconsistencies
+
 ## License
 
 This implementation follows the original questionnaire guidelines and scoring rules from published research.
@@ -318,4 +342,8 @@ This implementation follows the original questionnaire guidelines and scoring ru
 
 ### Epworth
 - Johns MW. A new method for measuring daytime sleepiness: the Epworth sleepiness scale. Sleep. 1991;14(6):540-5.
+
+### EQ-5D-EL
+- EuroQol Group. EQ-5D-EL User Guide (2019). https://euroqol.org/
+- French value set via EQ-5D-EL Crosswalk Index Value Calculator
 

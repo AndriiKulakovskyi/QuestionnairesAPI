@@ -56,7 +56,9 @@ def main():
         'test_qids_sr16.py': 'QIDS-SR16 Tests',
         'test_mdq.py': 'MDQ Tests',
         'test_asrm.py': 'ASRM Tests',
-        'test_epworth.py': 'Epworth Tests'
+        'test_epworth.py': 'Epworth Tests',
+        'test_eq5del.py': 'EQ-5D-EL Tests',
+        'test_fagerstrom.py': 'Fagerström Tests'
     }
     
     total_classes = 0
@@ -131,11 +133,13 @@ def main():
     print("=" * 70)
     
     try:
-        from questionnaires import QIDSSR16, QIDSError, MDQ, MDQError, ASRM, ASRMError, Epworth, EpworthError
+        from questionnaires import QIDSSR16, QIDSError, MDQ, MDQError, ASRM, ASRMError, Epworth, EpworthError, EQ5DEL, EQ5DELError, Fagerstrom, FagerstromError
         print("✅ QIDSSR16 class imported successfully")
         print("✅ MDQ class imported successfully")
         print("✅ ASRM class imported successfully")
         print("✅ Epworth class imported successfully")
+        print("✅ EQ-5D-EL class imported successfully")
+        print("✅ Fagerström class imported successfully")
         print("✅ Error classes imported successfully")
         
         # Quick instantiation test
@@ -143,10 +147,14 @@ def main():
         mdq = MDQ()
         asrm = ASRM()
         epworth = Epworth()
+        eq5d = EQ5DEL()
+        fager = Fagerstrom()
         print(f"✅ QIDSSR16 instance created ({len(qids.get_questions())} questions)")
         print(f"✅ MDQ instance created ({len(mdq.get_questions())} questions)")
         print(f"✅ ASRM instance created ({len(asrm.get_questions())} questions)")
         print(f"✅ Epworth instance created ({len(epworth.get_questions())} questions)")
+        print(f"✅ EQ-5D-EL instance created ({len(eq5d.get_questions())} questions)")
+        print(f"✅ Fagerström instance created ({len(fager.get_questions())} questions)")
         
     except ImportError as e:
         print(f"❌ Import error: {e}")
