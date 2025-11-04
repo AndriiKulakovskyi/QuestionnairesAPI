@@ -68,7 +68,7 @@ export default async function HeteroQuestionnairesPage() {
               </div>
             </div>
             <p className="mt-2 text-sm text-gray-400">
-              Make sure the backend API is running at http://127.0.0.1:8000
+              The API backend may be starting up. Please refresh the page in a moment.
             </p>
           </div>
         )}

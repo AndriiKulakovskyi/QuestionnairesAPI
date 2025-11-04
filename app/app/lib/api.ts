@@ -28,6 +28,11 @@ class APIError extends Error {
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  // Debug logging
+  if (typeof window !== 'undefined') {
+    console.log(`[API Client] Fetching from: ${url}`);
+  }
+  
   try {
     const response = await fetch(url, {
       ...options,
@@ -39,6 +44,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error(`[API Client] Error response:`, response.status, errorData);
       throw new APIError(
         errorData.detail || `HTTP error ${response.status}`,
         response.status,
@@ -51,6 +57,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
     if (error instanceof APIError) {
       throw error;
     }
+    console.error(`[API Client] Fetch failed:`, error);
     throw new APIError(
       `Failed to fetch from ${endpoint}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       0
