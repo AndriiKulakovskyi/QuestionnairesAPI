@@ -60,9 +60,15 @@ class QuestionnaireRegistry:
         }
         
         # Hetero questionnaires (clinician-rated)
-        from questionnaires import ALDA
+        from questionnaires import ALDA, CGI, EGF, EtatPatient, FAST, MADRS, YMRS
         self.hetero_questionnaires: Dict[str, Any] = {
-            "Alda.fr": ALDA()
+            "Alda.fr": ALDA(),
+            "CGI.fr": CGI(),
+            "EGF.fr": EGF(),
+            "EtatPatient.fr": EtatPatient(),
+            "FAST.fr": FAST(),
+            "MADRS.fr": MADRS(),
+            "YMRS.fr": YMRS()
         }
     
     def get_questionnaire(self, category: str, questionnaire_id: str) -> Optional[Any]:
