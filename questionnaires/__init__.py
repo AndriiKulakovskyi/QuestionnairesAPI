@@ -22,7 +22,13 @@ from .auto import (
     WURS25, WURS25Error
 )
 
+# Import hetero questionnaires (clinician-rated/heterogeneous)
+from .hetero import (
+    ALDA, ALDAError
+)
+
 __all__ = [
+    # Auto questionnaires
     "QIDSSR16", "QIDSError",
     "MDQ", "MDQError",
     "ASRM", "ASRMError",
@@ -42,6 +48,8 @@ __all__ = [
     "CSM", "CSMError",
     "CTQ", "CTQError",
     "CTI", "CTIError",
-    "WURS25", "WURS25Error"
+    "WURS25", "WURS25Error",
+    # Hetero questionnaires
+    "ALDA", "ALDAError"
 ]
 

@@ -9,6 +9,99 @@ alwaysApply: false
 
 Guidelines for implementing psychiatric questionnaires with complex branching logic, subscales, and clinical validation.
 
+## **CRITICAL**: Frontend-Friendly Explicit Logic
+
+**All questionnaires MUST be frontend-friendly with explicit, machine-readable logic. Implicit conditional logic causes validation paradoxes and implementation ambiguity.**
+
+### Required-But-Hidden Paradox
+
+❌ **NEVER DO THIS:**
+```python
+Question(
+    id="q2",
+    text="If Q1 ≥ 5, answer this...",
+    required=True,  # ❌ WRONG: Required but should be hidden sometimes
+)
+```
+
+✅ **ALWAYS DO THIS:**
+```python
+Question(
+    id="q2",
+    text="Please elaborate on your symptoms",
+    required=False,  # Not hard-required
+    display_if={">=": [{"var": "answers.q1"}, 5]},  # Show condition
+    required_if={">=": [{"var": "answers.q1"}, 5]},  # Required when visible
+)
+```
+
+### Mandatory Methods for Conditional Questionnaires
+
+If your questionnaire has ANY of these, you MUST implement explicit branching:
+
+1. **Questions that depend on answers** to other questions
+   - Example: MDQ Q2 only if Q1 has ≥2 yes answers
+   
+2. **Questions that depend on demographics/context**
+   - Example: PRISE-M gender-specific questions
+   
+3. **Questions mentioned as "if applicable" or "for [group] only"**
+
+**Required implementations:**
+
+```python
+class ConditionalQuestionnaire:
+    def get_branching_logic(self) -> Dict[str, Any]:
+        """
+        MANDATORY for questionnaires with conditional questions.
+        Returns machine-readable branching rules.
+        """
+        return {
+            "schema_version": "1.0",
+            "type": "answer_dependent" | "respondent_dependent",
+            "rules": [...],  # List of visibility and requirement rules
+            "context_variables": {...},  # Variables used in conditions
+            "fallback_behavior": {...}  # Edge case handling
+        }
+    
+    def get_respondent_schema(self) -> Dict[str, Any]:
+        """
+        MANDATORY if questions depend on demographics/external data.
+        Defines where the data comes from.
+        """
+        return {
+            "schema_version": "1.0",
+            "fields": [...]  # Demographic fields needed
+        }
+```
+
+### Complete Fallback Coverage
+
+All conditional logic MUST handle ALL cases, including edge cases:
+
+❌ **Incomplete:**
+```python
+if gender == "F":
+    exclude = ["q25"]
+elif gender == "M":
+    exclude = ["q20"]
+# ❌ MISSING: What if gender is null, "X", or invalid?
+```
+
+✅ **Complete:**
+```python
+if gender == "F":
+    exclude = ["q25"]
+elif gender == "M":
+    exclude = ["q20"]
+elif gender == "X":
+    exclude = ["q20", "q25"]  # ✅ Non-binary case
+else:
+    # ✅ Handle null/invalid
+    raise ValueError("Gender is required") 
+    # OR: exclude = ["q20", "q25"]  # Default behavior
+```
+
 ## Core Principles
 
 ### 1. Separation of Concerns
@@ -85,6 +178,9 @@ class ResponseOption:
 
 ### 4. Branching Logic System
 
+**REFERENCE IMPLEMENTATION**: See `questionnaires/auto/prise_m/prise_m.py` for a complete example of explicit branching logic with JSONLogic conditions, respondent schema, and fallback behavior.
+
+Be explicit and frontend-friendly with proper branching logic, and conditional requirements.
 ```python
 class BranchingRule:
     """Defines conditional question flow"""
@@ -128,7 +224,160 @@ class BranchingEngine:
         return [q for q in all_questions if q.id in active]
 ```
 
-### 4a. JSONLogic Branching (Advanced)
+### 4a. Respondent-Data Dependent Branching (Demographics/Context)
+
+Some questionnaires require external data (demographics, clinical context) that determines which questions to display. This is DIFFERENT from answer-dependent branching.
+
+#### When to Use Respondent-Data Branching
+
+Use when questions depend on:
+- **Demographics**: age, gender, sex, ethnicity
+- **Clinical status**: diagnosis, current medication, pregnancy status
+- **Context**: relationship to patient, setting (inpatient/outpatient)
+
+**Example:** PRISE-M has gender-specific questions (menstrual irregularities for females, erectile dysfunction for males).
+
+#### Implementation Pattern
+
+1. **Define Respondent Schema** - where the data comes from:
+```python
+def get_respondent_schema(self) -> Dict[str, Any]:
+    """Define required demographic/context data"""
+    return {
+        "schema_version": "1.0",
+        "description": "Required demographic information",
+        "fields": [
+            {
+                "id": "gender",
+                "label": "Gender",
+                "type": "single_choice",
+                "required": True,
+                "purpose": "Determines which gender-specific questions to show",
+                "options": [
+                    {
+                        "code": "F",
+                        "label": "Female",
+                        "triggers": "Shows female-specific items, hides male-specific"
+                    },
+                    {
+                        "code": "M",
+                        "label": "Male", 
+                        "triggers": "Shows male-specific items, hides female-specific"
+                    },
+                    {
+                        "code": "X",
+                        "label": "Other/Prefer not to say",
+                        "triggers": "Hides all gender-specific items"
+                    }
+                ]
+            }
+        ]
+    }
+```
+
+2. **Add Conditional Logic to Questions**:
+```python
+Question(
+    id="q20",
+    text="Irregular menstrual periods",
+    required=False,  # NOT hard-required
+    display_if={"==": [{"var": "gender"}, "F"]},  # Show if female
+    required_if={"==": [{"var": "gender"}, "F"]},  # Required if visible
+    gender_specific="F"
+)
+```
+
+3. **Define Explicit Branching Rules**:
+```python
+def get_branching_logic(self) -> Dict[str, Any]:
+    """Machine-readable branching rules"""
+    return {
+        "rules": [
+            {
+                "rule_id": "q20_visibility",
+                "question_id": "q20",
+                "rule_type": "display",
+                "condition": {"==": [{"var": "gender"}, "F"]},
+                "action_if_true": "show",
+                "action_if_false": "hide"
+            }
+        ],
+        "context_variables": {
+            "gender": {
+                "source": "respondent.gender",
+                "type": "string",
+                "allowed_values": ["F", "M", "X"]
+            }
+        },
+        "fallback_behavior": {
+            "when_gender_is_X": {
+                "action": "hide_all_gender_specific"
+            }
+        }
+    }
+```
+
+4. **Conditional Scoring Logic**:
+```python
+def calculate_score(self, answers: Dict, gender: Optional[str] = None):
+    # Determine which items to include
+    if gender == "F":
+        items = all_items - ["q_male_specific"]
+    elif gender == "M":
+        items = all_items - ["q_female_specific"]
+    else:
+        items = all_items - ["q_male_specific", "q_female_specific"]
+    
+    return sum(answers[item] for item in items)
+```
+
+#### Anti-Patterns to Avoid
+
+❌ **Hard-requiring conditionally-visible questions:**
+```python
+Question(required=True, display_if={...})  # BAD: required but may be hidden
+```
+
+✅ **Conditional requirement:**
+```python
+Question(required=False, required_if={...})  # GOOD: required only when visible
+```
+
+❌ **Implicit assumptions:**
+```python
+# BAD: Gender assumed to exist, no schema defined
+if gender == "F":  # Where does gender come from?
+    show_question("q20")
+```
+
+✅ **Explicit schema:**
+```python
+# GOOD: Schema defines where gender comes from
+respondent_schema = questionnaire.get_respondent_schema()
+# Frontend knows to collect this first
+```
+
+❌ **Missing fallback:**
+```python
+if gender == "F":
+    exclude = ["q25"]
+elif gender == "M":
+    exclude = ["q20"]
+# BAD: What if gender is null, "X", or invalid?
+```
+
+✅ **Complete fallback:**
+```python
+if gender == "F":
+    exclude = ["q25"]
+elif gender == "M":
+    exclude = ["q20"]
+else:  # X, null, or other
+    exclude = ["q20", "q25"]
+    # Explicitly handle all cases
+```
+
+### 4b. JSONLogic Branching (Answer-Dependent)
 
 Branching logic determines what to display/require/calculate based on already-given responses. It's "if...then..." logic applied to questions, sections, and options.
 

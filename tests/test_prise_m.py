@@ -198,7 +198,8 @@ class TestPRISEMScoring:
         result = self.prisem.calculate_score(answers, gender="F")
         
         assert result.total_score == 0
-        assert result.excluded_item == "q25"
+        assert result.excluded_items == ["q25"]
+        assert result.items_scored == 31
         assert result.gender_used == "F"
         assert result.warning is None
     
@@ -208,7 +209,8 @@ class TestPRISEMScoring:
         result = self.prisem.calculate_score(answers, gender="M")
         
         assert result.total_score == 0
-        assert result.excluded_item == "q20"
+        assert result.excluded_items == ["q20"]
+        assert result.items_scored == 31
         assert result.gender_used == "M"
         assert result.warning is None
     
@@ -222,7 +224,7 @@ class TestPRISEMScoring:
         
         # Score = 31 items (excluding q25): 30*1 + 1*2 = 32
         assert result.total_score == 32
-        assert result.excluded_item == "q25"
+        assert result.excluded_items == ["q25"]
     
     def test_scoring_male_excludes_female_item(self):
         """Test that male scoring excludes q20"""
@@ -234,7 +236,7 @@ class TestPRISEMScoring:
         
         # Score = 31 items (excluding q20): 30*1 + 1*2 = 32
         assert result.total_score == 32
-        assert result.excluded_item == "q20"
+        assert result.excluded_items == ["q20"]
     
     def test_scoring_inference_female_from_responses(self):
         """Test gender inference when only female item is endorsed"""
@@ -245,7 +247,7 @@ class TestPRISEMScoring:
         result = self.prisem.calculate_score(answers)  # No gender provided
         
         assert result.total_score == 2
-        assert result.excluded_item == "q25"  # Inferred female
+        assert result.excluded_items == ["q25"]  # Inferred female
         assert result.gender_used == "F"
         assert result.warning is not None
         assert "q20" in result.warning
@@ -259,7 +261,7 @@ class TestPRISEMScoring:
         result = self.prisem.calculate_score(answers)  # No gender provided
         
         assert result.total_score == 2
-        assert result.excluded_item == "q20"  # Inferred male
+        assert result.excluded_items == ["q20"]  # Inferred male
         assert result.gender_used == "M"
         assert result.warning is not None
         assert "q25" in result.warning
@@ -273,7 +275,7 @@ class TestPRISEMScoring:
         result = self.prisem.calculate_score(answers)  # No gender provided
         
         # Should exclude q25 by default
-        assert result.excluded_item == "q25"
+        assert result.excluded_items == ["q25"]
         assert result.warning is not None
         assert "défaut" in result.warning.lower()
     
@@ -317,7 +319,7 @@ class TestPRISEMScoring:
         """Test interpretation for high score"""
         answers = {f"q{i}": 1 for i in range(1, 33)}
         # Add some pénible items to reach high range (25-39)
-        for i in range(1, 11):
+        for i in range(1, 8):
             answers[f"q{i}"] = 2
         
         result = self.prisem.calculate_score(answers, gender="F")
@@ -370,7 +372,7 @@ class TestPRISEMGenderLogic:
         result = self.prisem.calculate_score(answers, gender="F")
         
         assert result.gender_used == "F"
-        assert result.excluded_item == "q25"
+        assert result.excluded_items == ["q25"]
         assert result.warning is None  # No warning when explicit
     
     def test_gender_explicit_male(self):
@@ -379,7 +381,7 @@ class TestPRISEMGenderLogic:
         result = self.prisem.calculate_score(answers, gender="M")
         
         assert result.gender_used == "M"
-        assert result.excluded_item == "q20"
+        assert result.excluded_items == ["q20"]
         assert result.warning is None  # No warning when explicit
     
     def test_gender_inference_logic_female(self):
@@ -391,7 +393,7 @@ class TestPRISEMGenderLogic:
         result = self.prisem.calculate_score(answers)
         
         assert result.gender_used == "F"
-        assert result.excluded_item == "q25"
+        assert result.excluded_items == ["q25"]
     
     def test_gender_inference_logic_male(self):
         """Test gender inference when male item endorsed"""
@@ -402,7 +404,7 @@ class TestPRISEMGenderLogic:
         result = self.prisem.calculate_score(answers)
         
         assert result.gender_used == "M"
-        assert result.excluded_item == "q20"
+        assert result.excluded_items == ["q20"]
     
     def test_gender_conflict_both_endorsed(self):
         """Test behavior when both gender items are endorsed"""
@@ -412,14 +414,46 @@ class TestPRISEMGenderLogic:
         
         # With explicit gender
         result_f = self.prisem.calculate_score(answers, gender="F")
-        assert result_f.excluded_item == "q25"
+        assert result_f.excluded_items == ["q25"]
         
         result_m = self.prisem.calculate_score(answers, gender="M")
-        assert result_m.excluded_item == "q20"
+        assert result_m.excluded_items == ["q20"]
         
         # Without gender - should default to excluding q25
         result_default = self.prisem.calculate_score(answers)
-        assert result_default.excluded_item == "q25"
+        assert result_default.excluded_items == ["q25"]
+    
+    def test_gender_nonbinary_excludes_both(self):
+        """Test that non-binary/other gender excludes both gender-specific items"""
+        answers = {f"q{i}": 1 for i in range(1, 33)}
+        result = self.prisem.calculate_score(answers, gender="X")
+        
+        # Should exclude both q20 and q25
+        assert result.excluded_items == ["q20", "q25"]
+        assert result.items_scored == 30  # 32 - 2 gender-specific items
+        assert result.gender_used == "X"
+        assert result.total_score == 30  # 30 items * 1
+        assert result.range == (0, 60)  # 30 items * 2
+    
+    def test_get_questions_nonbinary_filters_both(self):
+        """Test getting questions for non-binary gender filters both items"""
+        questions = self.prisem.get_questions(gender="X")
+        
+        # Should have 30 questions (32 - q20 - q25)
+        assert len(questions) == 30
+        question_ids = [q['id'] for q in questions]
+        assert 'q20' not in question_ids
+        assert 'q25' not in question_ids
+    
+    def test_validation_nonbinary_doesnt_require_gender_items(self):
+        """Test validation for non-binary doesn't require gender-specific items"""
+        # Only provide answers for 30 items (excluding q20 and q25)
+        answers = {f"q{i}": 0 for i in range(1, 33) if i not in [20, 25]}
+        
+        validation = self.prisem.validate_answers(answers, gender="X")
+        
+        assert validation.valid is True
+        assert len(validation.errors) == 0
 
 
 class TestPRISEMClinicalScenarios:
@@ -513,7 +547,7 @@ class TestPRISEMIntegration:
         # 4. Calculate score
         result = self.prisem.calculate_score(answers, gender="F")
         assert result.total_score == 3
-        assert result.excluded_item == "q25"
+        assert result.excluded_items == ["q25"]
     
     def test_complete_workflow_male(self):
         """Test complete workflow for male patient"""
@@ -529,7 +563,7 @@ class TestPRISEMIntegration:
         
         result = self.prisem.calculate_score(answers, gender="M")
         assert result.total_score == 3
-        assert result.excluded_item == "q20"
+        assert result.excluded_items == ["q20"]
     
     def test_workflow_without_gender_inference(self):
         """Test workflow with gender inference"""
@@ -540,6 +574,125 @@ class TestPRISEMIntegration:
         
         assert result.gender_used == "F"
         assert result.warning is not None
+
+
+class TestPRISEMBranchingLogic:
+    """Test new branching logic and schema features"""
+    
+    def setup_method(self):
+        """Setup test fixture"""
+        self.prisem = PRISEM()
+    
+    def test_get_respondent_schema(self):
+        """Test respondent schema retrieval"""
+        schema = self.prisem.get_respondent_schema()
+        
+        assert 'schema_version' in schema
+        assert 'fields' in schema
+        assert len(schema['fields']) == 1
+        
+        gender_field = schema['fields'][0]
+        assert gender_field['id'] == 'gender'
+        assert gender_field['required'] is True
+        assert len(gender_field['options']) == 3
+        
+        # Check options
+        options = {opt['code']: opt for opt in gender_field['options']}
+        assert 'F' in options
+        assert 'M' in options
+        assert 'X' in options
+    
+    def test_get_branching_logic(self):
+        """Test branching logic retrieval"""
+        logic = self.prisem.get_branching_logic()
+        
+        assert 'schema_version' in logic
+        assert 'type' in logic
+        assert logic['type'] == 'conditional_visibility'
+        assert 'rules' in logic
+        assert len(logic['rules']) == 4  # 2 visibility + 2 required rules
+        
+        # Check rules for q20
+        q20_rules = [r for r in logic['rules'] if r['question_id'] == 'q20']
+        assert len(q20_rules) == 2  # visibility + requirement
+        
+        # Check rules for q25
+        q25_rules = [r for r in logic['rules'] if r['question_id'] == 'q25']
+        assert len(q25_rules) == 2  # visibility + requirement
+        
+        # Check context variables
+        assert 'context_variables' in logic
+        assert 'gender' in logic['context_variables']
+        
+        # Check fallback behavior
+        assert 'fallback_behavior' in logic
+        assert 'when_gender_is_X' in logic['fallback_behavior']
+        assert 'when_gender_missing' in logic['fallback_behavior']
+        
+        # Check scoring logic
+        assert 'scoring_logic' in logic
+        assert 'conditional_inclusions' in logic['scoring_logic']
+        assert len(logic['scoring_logic']['conditional_inclusions']) == 3  # F, M, X
+    
+    def test_get_full_questionnaire_with_logic(self):
+        """Test getting full questionnaire with logic included"""
+        full = self.prisem.get_full_questionnaire(gender="F", include_logic=True)
+        
+        assert 'metadata' in full
+        assert 'sections' in full
+        assert 'questions' in full
+        assert 'respondent' in full
+        assert 'logic' in full
+        
+        # Check that logic is included
+        assert full['respondent']['schema_version'] == '1.0'
+        assert full['logic']['type'] == 'conditional_visibility'
+    
+    def test_get_full_questionnaire_without_logic(self):
+        """Test getting full questionnaire without logic"""
+        full = self.prisem.get_full_questionnaire(gender="F", include_logic=False)
+        
+        assert 'metadata' in full
+        assert 'sections' in full
+        assert 'questions' in full
+        assert 'respondent' not in full
+        assert 'logic' not in full
+    
+    def test_question_display_if_conditions(self):
+        """Test that gender-specific questions have display_if conditions"""
+        q20 = self.prisem.get_question_by_id('q20')
+        q25 = self.prisem.get_question_by_id('q25')
+        
+        # q20 should have display_if for female
+        assert q20['display_if'] is not None
+        assert q20['display_if']['=='] == [{'var': 'gender'}, 'F']
+        
+        # q25 should have display_if for male
+        assert q25['display_if'] is not None
+        assert q25['display_if']['=='] == [{'var': 'gender'}, 'M']
+    
+    def test_question_required_if_conditions(self):
+        """Test that gender-specific questions have required_if conditions"""
+        q20 = self.prisem.get_question_by_id('q20')
+        q25 = self.prisem.get_question_by_id('q25')
+        
+        # q20 should be conditionally required
+        assert q20['required'] is False  # Not hard-required
+        assert q20['required_if'] is not None
+        assert q20['required_if']['=='] == [{'var': 'gender'}, 'F']
+        
+        # q25 should be conditionally required
+        assert q25['required'] is False  # Not hard-required
+        assert q25['required_if'] is not None
+        assert q25['required_if']['=='] == [{'var': 'gender'}, 'M']
+    
+    def test_regular_questions_not_conditionally_required(self):
+        """Test that regular questions don't have conditional logic"""
+        q1 = self.prisem.get_question_by_id('q1')
+        
+        assert q1['required'] is True  # Hard-required
+        assert q1['display_if'] is None
+        assert q1['required_if'] is None
 
 
 if __name__ == "__main__":

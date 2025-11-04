@@ -141,8 +141,56 @@ Currently in development. This section will contain clinician-administered and c
 
 ## Installation
 
+This project uses Poetry for dependency management.
+
+### Install Poetry (if not already installed)
+
 ```bash
-pip install -r requirements.txt
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+### Install dependencies
+
+```bash
+# Install all dependencies (including dev dependencies)
+poetry install
+
+# Install only production dependencies
+poetry install --only main
+```
+
+### Activate the virtual environment
+
+```bash
+poetry shell
+```
+
+### Useful Poetry Commands
+
+```bash
+# Add a new dependency
+poetry add package-name
+
+# Add a dev dependency
+poetry add --group dev package-name
+
+# Update dependencies
+poetry update
+
+# Update a specific package
+poetry update package-name
+
+# Show installed packages
+poetry show
+
+# Show outdated packages
+poetry show --outdated
+
+# Remove a package
+poetry remove package-name
+
+# Export requirements.txt (if needed for compatibility)
+poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
 
 ## Project Structure
@@ -189,7 +237,8 @@ QuestionnairesAPI/
 │   ├── __init__.py
 │   ├── conftest.py
 │   └── test_*.py
-├── requirements.txt
+├── pyproject.toml               # Poetry configuration
+├── poetry.lock                  # Poetry lock file
 ├── example_usage.py
 ├── run_api.py                   # API startup script
 └── README.md
@@ -199,13 +248,20 @@ QuestionnairesAPI/
 
 ### Starting the API Server
 
-Start the FastAPI server:
+Start the FastAPI server using Poetry:
 
 ```bash
-python run_api.py
+# Using uvicorn directly
+poetry run uvicorn run_api:app --reload
+
+# Or run the startup script
+poetry run python run_api.py
+
+# Run on a different port
+poetry run uvicorn run_api:app --reload --port 8080
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8000` (or your specified port)
 - Interactive documentation: `http://localhost:8000/docs`
 - Alternative documentation: `http://localhost:8000/redoc`
 - OpenAPI schema: `http://localhost:8000/openapi.json`
@@ -517,19 +573,20 @@ The project includes comprehensive unit tests (97+ test cases) covering all func
 
 ```bash
 # Using the test runner script (recommended)
-python run_tests.py all          # Run all tests with coverage
-python run_tests.py qids         # Run only QIDS-SR16 tests
-python run_tests.py mdq          # Run only MDQ tests
-python run_tests.py coverage     # Generate HTML coverage report
+poetry run python run_tests.py all          # Run all tests with coverage
+poetry run python run_tests.py qids         # Run only QIDS-SR16 tests
+poetry run python run_tests.py mdq          # Run only MDQ tests
+poetry run python run_tests.py coverage     # Generate HTML coverage report
 
 # Using pytest directly
-pytest                           # Run all tests
-pytest -v                        # Verbose output
-pytest tests/test_qids_sr16.py   # Run specific test file
-pytest -k "validation"           # Run tests matching keyword
-```
+poetry run pytest                           # Run all tests
+poetry run pytest -v                        # Verbose output
+poetry run pytest tests/test_qids_sr16.py   # Run specific test file
+poetry run pytest -k "validation"           # Run tests matching keyword
 
-See [TESTING.md](TESTING.md) for detailed testing documentation.
+# Generate coverage report
+poetry run pytest --cov=questionnaires --cov-report=html
+```
 
 ### Test Coverage
 
@@ -546,7 +603,7 @@ See [TESTING.md](TESTING.md) for detailed testing documentation.
 Run the example usage script:
 
 ```bash
-python example_usage.py
+poetry run python example_usage.py
 ```
 
 ## Clinical Notes

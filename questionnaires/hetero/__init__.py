@@ -1,5 +1,7 @@
 # Hetero (clinician-rated) questionnaires
-# This module will contain clinician-administered/rated questionnaires
+# This module contains clinician-administered/rated questionnaires with heterogeneous item types
 
-__all__ = []
+from .alda import ALDA, ALDAError
+
+__all__ = ["ALDA", "ALDAError"]
 
