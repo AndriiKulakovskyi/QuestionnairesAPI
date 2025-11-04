@@ -31,6 +31,8 @@ class Question(BaseModel):
     options: List[QuestionOption]
     constraints: Dict[str, Any]
     help: Optional[str] = None
+    scoring_group_id: Optional[str] = None  # For mutually exclusive groups
+    scoring_aggregation: Optional[str] = None  # "max", "sum", "direct"
 
 
 class Section(BaseModel):
@@ -121,7 +123,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Plus d'une fois sur deux, je mets au moins 30 minutes à m'endormir.", score=2),
                     QuestionOption(code=3, label="Plus d'une fois sur deux, je mets plus d'une heure à m'endormir.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="sleep",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q2",
@@ -135,7 +139,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Je me réveille au moins une fois par nuit, mais je me rendors facilement.", score=2),
                     QuestionOption(code=3, label="Plus d'une fois sur deux, plusieurs réveils nocturnes avec ≥20 min éveillé(e).", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="sleep",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q3",
@@ -149,7 +155,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Presque toujours réveil ≥1 h avant, mais je me rendors.", score=2),
                     QuestionOption(code=3, label="Réveil ≥1 h avant et impossible de me rendormir.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="sleep",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q4",
@@ -163,7 +171,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="≤12 h/24 h siestes comprises.", score=2),
                     QuestionOption(code=3, label=">12 h/24 h siestes comprises.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="sleep",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q5",
@@ -191,7 +201,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Je mange beaucoup moins et seulement en me forçant.", score=2),
                     QuestionOption(code=3, label="Je mange rarement sur 24 h et seulement en me forçant énormément ou persuadé(e).", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="appetite_weight",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q7",
@@ -205,7 +217,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Je mange régulièrement plus souvent et/ou en plus grande quantité.", score=2),
                     QuestionOption(code=3, label="Grand besoin de manger davantage pendant et entre les repas.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="appetite_weight",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q8",
@@ -219,7 +233,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Perdu 1 kg ou plus.", score=2),
                     QuestionOption(code=3, label="Perdu plus de 2 kg.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="appetite_weight",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q9",
@@ -233,7 +249,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Pris 1 kg ou plus.", score=2),
                     QuestionOption(code=3, label="Pris plus de 2 kg.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="appetite_weight",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q10",
@@ -318,7 +336,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Réponses lentes, sûr(e) de réfléchir plus lentement.", score=2),
                     QuestionOption(code=3, label="Souvent incapable de répondre sans gros efforts.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="psychomotor",
+                scoring_aggregation="max"
             ),
             Question(
                 id="q16",
@@ -332,7 +352,9 @@ class QIDSSR16:
                     QuestionOption(code=2, label="Impulsions de bouger, plutôt agité(e).", score=2),
                     QuestionOption(code=3, label="Par moments, incapable de rester assis(e), besoin de faire les cent pas.", score=3)
                 ],
-                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]}
+                constraints={"value_type": "integer", "allowed_values": [0, 1, 2, 3]},
+                scoring_group_id="psychomotor",
+                scoring_aggregation="max"
             )
         ]
         return questions
@@ -356,9 +378,101 @@ class QIDSSR16:
             "scoring_range": [0, 27]
         }
     
+    def get_scoring_rules(self) -> Dict[str, Any]:
+        """
+        Get explicit scoring rules for frontend implementation.
+        This provides machine-readable information about mutually exclusive
+        groups and how to calculate the total score.
+        """
+        return {
+            "schema_version": "1.0",
+            "type": "mutually_exclusive_groups",
+            "description": "QIDS-SR16 uses maximum scores within certain symptom domains",
+            "domains": [
+                {
+                    "id": "sleep",
+                    "label": "Sommeil",
+                    "items": ["q1", "q2", "q3", "q4"],
+                    "aggregation": "max",
+                    "description": "Troubles du sommeil: insomnie ou hypersomnie (max 1 sur 4)",
+                    "range": [0, 3],
+                    "rationale": "Patient experiences either difficulty sleeping OR excessive sleep, not both simultaneously"
+                },
+                {
+                    "id": "appetite_weight",
+                    "label": "Appétit/Poids",
+                    "items": ["q6", "q7", "q8", "q9"],
+                    "aggregation": "max",
+                    "description": "Appétit/Poids: diminution ou augmentation (max 1 sur 4)",
+                    "range": [0, 3],
+                    "rationale": "Patient experiences either appetite loss OR increase, and either weight loss OR gain, not both"
+                },
+                {
+                    "id": "psychomotor",
+                    "label": "Psychomoteur",
+                    "items": ["q15", "q16"],
+                    "aggregation": "max",
+                    "description": "Activité psychomotrice: ralentissement ou agitation (max 1 sur 2)",
+                    "range": [0, 3],
+                    "rationale": "Patient experiences either psychomotor slowing OR agitation, not both simultaneously"
+                }
+            ],
+            "direct_items": [
+                {"id": "q5", "label": "Tristesse", "aggregation": "direct"},
+                {"id": "q10", "label": "Concentration/Décisions", "aggregation": "direct"},
+                {"id": "q11", "label": "Opinion de soi", "aggregation": "direct"},
+                {"id": "q12", "label": "Pensées de mort/suicide", "aggregation": "direct"},
+                {"id": "q13", "label": "Intérêt général", "aggregation": "direct"},
+                {"id": "q14", "label": "Niveau d'énergie", "aggregation": "direct"}
+            ],
+            "total": {
+                "formula": "sum(max(q1,q2,q3,q4), q5, max(q6,q7,q8,q9), q10, q11, q12, q13, q14, max(q15,q16))",
+                "formula_expanded": "max(q1-q4) + q5 + max(q6-q9) + q10 + q11 + q12 + q13 + q14 + max(q15,q16)",
+                "range": [0, 27],
+                "description": "Total score uses max from grouped domains plus direct items"
+            },
+            "policies": {
+                "missing": "error",
+                "missing_policy_description": "All questions must be answered; no imputation",
+                "ties": "keep_max",
+                "ties_description": "In case of equal scores within a group, any can be used (max is deterministic)"
+            },
+            "validation": {
+                "check_mutual_exclusivity": True,
+                "warning_if_both_endorsed": [
+                    {
+                        "group": "sleep",
+                        "pairs": [
+                            {"items": ["q1", "q2", "q3"], "vs": ["q4"], "warning": "Patient endorsed both insomnia symptoms and hypersomnia"},
+                        ]
+                    },
+                    {
+                        "group": "appetite_weight",
+                        "pairs": [
+                            {"items": ["q6"], "vs": ["q7"], "warning": "Patient endorsed both appetite decrease and increase"},
+                            {"items": ["q8"], "vs": ["q9"], "warning": "Patient endorsed both weight loss and gain"}
+                        ]
+                    },
+                    {
+                        "group": "psychomotor",
+                        "pairs": [
+                            {"items": ["q15"], "vs": ["q16"], "warning": "Patient endorsed both psychomotor slowing and agitation"}
+                        ]
+                    }
+                ]
+            },
+            "interpretation_thresholds": {
+                "none": [0, 5],
+                "mild": [6, 10],
+                "moderate": [11, 15],
+                "severe": [16, 20],
+                "very_severe": [21, 27]
+            }
+        }
+    
     def get_sections(self) -> List[Dict[str, Any]]:
         """Get all sections"""
-        return [section.dict() for section in self._sections]
+        return [section.model_dump() for section in self._sections]
     
     def get_questions(self, section_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """
@@ -373,13 +487,13 @@ class QIDSSR16:
         questions = self._questions
         if section_id:
             questions = [q for q in questions if q.section_id == section_id]
-        return [q.dict() for q in questions]
+        return [q.model_dump() for q in questions]
     
     def get_question_by_id(self, question_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific question by ID"""
         for q in self._questions:
             if q.id == question_id:
-                return q.dict()
+                return q.model_dump()
         return None
     
     def validate_answers(self, answers: Dict[str, int]) -> ValidationResult:

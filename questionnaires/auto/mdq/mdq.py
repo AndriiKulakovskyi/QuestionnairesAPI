@@ -30,6 +30,8 @@ class Question(BaseModel):
     required: bool
     options: List[QuestionOption]
     constraints: Dict[str, Any]
+    display_if: Optional[Dict[str, Any]] = None  # JSONLogic condition for visibility
+    required_if: Optional[Dict[str, Any]] = None  # JSONLogic condition for conditional requirement
 
 
 class Section(BaseModel):
@@ -122,7 +124,7 @@ class MDQ:
         ]
     
     def _build_questions(self) -> List[Question]:
-        """Build all questions"""
+        """Build all questions with conditional logic"""
         questions = []
         
         # Build Q1 items (13 yes/no questions)
@@ -140,13 +142,25 @@ class MDQ:
                 constraints={"value_type": "integer", "allowed_values": [0, 1]}
             ))
         
-        # Q2: Temporal concurrence
+        # Build the condition for Q2 and Q3: sum of Q1 items >= 2
+        q1_sum_condition = {
+            ">=": [
+                {"+": [
+                    {"var": f"answers.q1_{i}"} for i in range(1, 14)
+                ]},
+                2
+            ]
+        }
+        
+        # Q2: Temporal concurrence (conditional on Q1 sum >= 2)
         questions.append(Question(
             id="q2",
             section_id="sec2",
             text="2. Si ≥2 réponses 'oui' à la Q1, ces réponses sont-elles apparues durant la même période ?",
             type="single_choice",
-            required=True,
+            required=False,  # Not hard-required, becomes required when visible
+            display_if=q1_sum_condition,
+            required_if=q1_sum_condition,
             options=[
                 QuestionOption(code=1, label="Oui", score=None),
                 QuestionOption(code=0, label="Non", score=None)
@@ -154,13 +168,15 @@ class MDQ:
             constraints={"value_type": "integer", "allowed_values": [0, 1]}
         ))
         
-        # Q3: Functional impact
+        # Q3: Functional impact (conditional on Q1 sum >= 2)
         questions.append(Question(
             id="q3",
             section_id="sec2",
             text="3. À quel point ces problèmes ont-ils eu un impact sur votre fonctionnement ?",
             type="single_choice",
-            required=True,
+            required=False,  # Not hard-required, becomes required when visible
+            display_if=q1_sum_condition,
+            required_if=q1_sum_condition,
             options=[
                 QuestionOption(code=0, label="Pas de problème", score=None),
                 QuestionOption(code=1, label="Problème mineur", score=None),
@@ -194,9 +210,109 @@ class MDQ:
             "screening_criteria": "MDQ POSITIF si (Q1≥7) ET (Q2=oui) ET (Q3=problème moyen ou sérieux)"
         }
     
+    def get_branching_logic(self) -> Dict[str, Any]:
+        """
+        Get explicit branching logic rules for frontend implementation.
+        This provides machine-readable visibility and requirement rules.
+        """
+        # Build the list of Q1 item IDs for the condition
+        q1_items = [f"q1_{i}" for i in range(1, 14)]
+        
+        return {
+            "schema_version": "1.0",
+            "type": "answer_dependent",
+            "description": "Q2 and Q3 are only shown if at least 2 'yes' answers in Q1",
+            "rules": [
+                {
+                    "rule_id": "q2_visibility",
+                    "question_id": "q2",
+                    "rule_type": "display",
+                    "condition": {
+                        ">=": [
+                            {"+": [{"var": f"answers.{item}"} for item in q1_items]},
+                            2
+                        ]
+                    },
+                    "description": "Show Q2 only if at least 2 'yes' answers in Q1",
+                    "action_if_true": "show",
+                    "action_if_false": "hide"
+                },
+                {
+                    "rule_id": "q2_requirement",
+                    "question_id": "q2",
+                    "rule_type": "required",
+                    "condition": {
+                        ">=": [
+                            {"+": [{"var": f"answers.{item}"} for item in q1_items]},
+                            2
+                        ]
+                    },
+                    "description": "Q2 is required only when visible (Q1 sum >= 2)",
+                    "action_if_true": "required",
+                    "action_if_false": "optional"
+                },
+                {
+                    "rule_id": "q3_visibility",
+                    "question_id": "q3",
+                    "rule_type": "display",
+                    "condition": {
+                        ">=": [
+                            {"+": [{"var": f"answers.{item}"} for item in q1_items]},
+                            2
+                        ]
+                    },
+                    "description": "Show Q3 only if at least 2 'yes' answers in Q1",
+                    "action_if_true": "show",
+                    "action_if_false": "hide"
+                },
+                {
+                    "rule_id": "q3_requirement",
+                    "question_id": "q3",
+                    "rule_type": "required",
+                    "condition": {
+                        ">=": [
+                            {"+": [{"var": f"answers.{item}"} for item in q1_items]},
+                            2
+                        ]
+                    },
+                    "description": "Q3 is required only when visible (Q1 sum >= 2)",
+                    "action_if_true": "required",
+                    "action_if_false": "optional"
+                }
+            ],
+            "context_variables": {
+                "q1_sum": {
+                    "source": "calculated",
+                    "formula": {
+                        "sum": q1_items
+                    },
+                    "type": "integer",
+                    "range": [0, 13],
+                    "description": "Sum of all Q1 'yes' responses"
+                }
+            },
+            "fallback_behavior": {
+                "when_q1_sum_lt_2": {
+                    "q2": "hide",
+                    "q3": "hide",
+                    "description": "Hide Q2 and Q3 if less than 2 yes answers in Q1"
+                },
+                "validation": {
+                    "hidden_questions_not_required": True,
+                    "description": "Hidden questions (Q2, Q3) are not validated when Q1 sum < 2"
+                }
+            },
+            "scoring_impact": {
+                "description": "Q2 and Q3 do not contribute to numeric score, only to screening result interpretation",
+                "screening_threshold": {
+                    "positive_if": "Q1 >= 7 AND Q2 = yes AND Q3 >= 2 (moderate or serious)"
+                }
+            }
+        }
+    
     def get_sections(self) -> List[Dict[str, Any]]:
         """Get all sections"""
-        return [section.dict() for section in self._sections]
+        return [section.model_dump() for section in self._sections]
     
     def get_questions(self, section_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """
@@ -211,18 +327,18 @@ class MDQ:
         questions = self._questions
         if section_id:
             questions = [q for q in questions if q.section_id == section_id]
-        return [q.dict() for q in questions]
+        return [q.model_dump() for q in questions]
     
     def get_question_by_id(self, question_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific question by ID"""
         for q in self._questions:
             if q.id == question_id:
-                return q.dict()
+                return q.model_dump()
         return None
     
     def validate_answers(self, answers: Dict[str, int]) -> ValidationResult:
         """
-        Validate provided answers
+        Validate provided answers with conditional logic for Q2 and Q3
         
         Args:
             answers: Dictionary of question_id -> answer mappings
@@ -233,19 +349,35 @@ class MDQ:
         errors = []
         warnings = []
         
-        # Check for missing required questions
+        # Check for missing Q1 questions (always required)
         q1_keys = [f"q1_{i}" for i in range(1, 14)]
-        expected = q1_keys + ["q2", "q3"]
-        missing = [k for k in expected if k not in answers]
-        if missing:
-            errors.append(f"Items manquants: {', '.join(missing)}")
+        missing_q1 = [k for k in q1_keys if k not in answers]
+        if missing_q1:
+            errors.append(f"Items Q1 manquants: {', '.join(missing_q1)}")
         
-        # Check Q1 and Q2 values (binary 0/1)
+        # Calculate Q1 sum for conditional logic
+        q1_sum = sum(answers.get(k, 0) for k in q1_keys)
+        
+        # Q2 and Q3 are only required if Q1 sum >= 2
+        if q1_sum >= 2:
+            if "q2" not in answers:
+                errors.append("Q2 est requise lorsque ≥2 réponses 'oui' à Q1")
+            if "q3" not in answers:
+                errors.append("Q3 est requise lorsque ≥2 réponses 'oui' à Q1")
+        else:
+            # Q2 and Q3 should not be present if Q1 sum < 2
+            if "q2" in answers:
+                warnings.append("Q2 est fournie alors que Q1 < 2 'oui' (Q2 devrait être cachée)")
+            if "q3" in answers:
+                warnings.append("Q3 est fournie alors que Q1 < 2 'oui' (Q3 devrait être cachée)")
+        
+        # Check Q1 values (binary 0/1)
         bad_q1 = {k: v for k, v in answers.items() 
                   if k in q1_keys and (not isinstance(v, int) or v not in (0, 1))}
         if bad_q1:
             errors.append(f"Q1 items doivent être binaires 0 (non) ou 1 (oui): {bad_q1}")
         
+        # Check Q2 values (binary 0/1)
         if "q2" in answers and (not isinstance(answers["q2"], int) or answers["q2"] not in (0, 1)):
             errors.append("Q2 doit être binaire 0 (non) ou 1 (oui).")
         
@@ -255,8 +387,6 @@ class MDQ:
         
         # Clinical consistency warnings (only if no errors)
         if not errors:
-            q1_sum = sum(answers.get(k, 0) for k in q1_keys)
-            
             # Warning: Q3 indicates problem but no Q1 symptoms
             if q1_sum == 0 and answers.get('q3', 0) in (1, 2, 3):
                 warnings.append(
@@ -359,10 +489,20 @@ class MDQ:
         
         return interpretation.strip()
     
-    def get_full_questionnaire(self) -> Dict[str, Any]:
-        """Get complete questionnaire structure for frontend"""
-        return {
+    def get_full_questionnaire(self, include_logic: bool = True) -> Dict[str, Any]:
+        """
+        Get complete questionnaire structure for frontend
+        
+        Args:
+            include_logic: Whether to include branching logic
+        """
+        result = {
             "metadata": self.get_metadata(),
             "sections": self.get_sections(),
             "questions": self.get_questions()
         }
+        
+        if include_logic:
+            result["logic"] = self.get_branching_logic()
+        
+        return result

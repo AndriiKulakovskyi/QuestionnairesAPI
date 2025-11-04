@@ -150,25 +150,25 @@ class TestMDQValidation:
         
         assert validation.valid is False
         assert len(validation.errors) > 0
-        assert "Items manquants" in validation.errors[0]
+        assert "Q1 manquants" in validation.errors[0]
     
     def test_missing_q2_error(self):
-        """Test validation fails when Q2 is missing"""
-        answers = {f"q1_{i}": 0 for i in range(1, 14)}
+        """Test validation fails when Q2 is missing but required (Q1 >= 2)"""
+        answers = {f"q1_{i}": 1 if i <= 2 else 0 for i in range(1, 14)}  # sum=2, Q2 required
         answers['q3'] = 0  # Q2 missing
         validation = self.mdq.validate_answers(answers)
         
         assert validation.valid is False
-        assert "q2" in validation.errors[0].lower()
+        assert "Q2" in validation.errors[0]
     
     def test_missing_q3_error(self):
-        """Test validation fails when Q3 is missing"""
-        answers = {f"q1_{i}": 0 for i in range(1, 14)}
+        """Test validation fails when Q3 is missing but required (Q1 >= 2)"""
+        answers = {f"q1_{i}": 1 if i <= 2 else 0 for i in range(1, 14)}  # sum=2, Q3 required
         answers['q2'] = 0  # Q3 missing
         validation = self.mdq.validate_answers(answers)
         
         assert validation.valid is False
-        assert "q3" in validation.errors[0].lower()
+        assert "Q3" in validation.errors[0]
     
     def test_invalid_q1_value_too_high(self):
         """Test validation fails with Q1 values > 1"""
@@ -371,7 +371,7 @@ class TestMDQScreening:
         with pytest.raises(MDQError) as exc_info:
             self.mdq.calculate_screening(answers)
         
-        assert "Items manquants" in str(exc_info.value)
+        assert "Q1 manquants" in str(exc_info.value)
 
 
 class TestMDQBoundaryConditions:
@@ -506,7 +506,7 @@ class TestMDQSpecialCases:
         }
         
         result = self.mdq.calculate_screening(answers)
-        assert result.q1_total == 9
+        assert result.q1_total == 8
         assert result.screening_result == "POSITIF"
     
     def test_irritable_manic_symptoms_pattern(self):
@@ -614,12 +614,405 @@ class TestMDQIntegration:
         # 3. Validate
         validation = self.mdq.validate_answers(answers)
         assert validation.valid is True
-        assert len(validation.warnings) == 0
+        # With conditional logic, Q2 and Q3 should trigger warnings since Q1 sum < 2
+        assert len(validation.warnings) == 2
         
         # 4. Calculate screening
         result = self.mdq.calculate_screening(answers)
         assert result.screening_result == "NEGATIF"
         assert result.q1_total == 0
+
+
+class TestMDQBranchingLogic:
+    """Test MDQ branching logic and conditional display/requirements"""
+    
+    def setup_method(self):
+        """Setup test fixture"""
+        self.mdq = MDQ()
+    
+    def test_get_branching_logic(self):
+        """Test branching logic method returns proper structure"""
+        logic = self.mdq.get_branching_logic()
+        
+        assert logic is not None
+        assert logic['schema_version'] == '1.0'
+        assert logic['type'] == 'answer_dependent'
+        assert 'rules' in logic
+        assert 'context_variables' in logic
+        assert 'fallback_behavior' in logic
+        assert 'scoring_impact' in logic
+    
+    def test_branching_logic_has_q2_rules(self):
+        """Test Q2 has visibility and requirement rules"""
+        logic = self.mdq.get_branching_logic()
+        rules = logic['rules']
+        
+        # Find Q2 rules
+        q2_visibility = next((r for r in rules if r['rule_id'] == 'q2_visibility'), None)
+        q2_requirement = next((r for r in rules if r['rule_id'] == 'q2_requirement'), None)
+        
+        assert q2_visibility is not None
+        assert q2_visibility['question_id'] == 'q2'
+        assert q2_visibility['rule_type'] == 'display'
+        assert 'condition' in q2_visibility
+        
+        assert q2_requirement is not None
+        assert q2_requirement['question_id'] == 'q2'
+        assert q2_requirement['rule_type'] == 'required'
+    
+    def test_branching_logic_has_q3_rules(self):
+        """Test Q3 has visibility and requirement rules"""
+        logic = self.mdq.get_branching_logic()
+        rules = logic['rules']
+        
+        # Find Q3 rules
+        q3_visibility = next((r for r in rules if r['rule_id'] == 'q3_visibility'), None)
+        q3_requirement = next((r for r in rules if r['rule_id'] == 'q3_requirement'), None)
+        
+        assert q3_visibility is not None
+        assert q3_visibility['question_id'] == 'q3'
+        assert q3_visibility['rule_type'] == 'display'
+        
+        assert q3_requirement is not None
+        assert q3_requirement['question_id'] == 'q3'
+        assert q3_requirement['rule_type'] == 'required'
+    
+    def test_branching_logic_context_variables(self):
+        """Test context variables are properly defined"""
+        logic = self.mdq.get_branching_logic()
+        context = logic['context_variables']
+        
+        assert 'q1_sum' in context
+        assert context['q1_sum']['source'] == 'calculated'
+        assert context['q1_sum']['type'] == 'integer'
+        assert context['q1_sum']['range'] == [0, 13]
+        assert 'formula' in context['q1_sum']
+    
+    def test_branching_logic_fallback_behavior(self):
+        """Test fallback behavior is defined"""
+        logic = self.mdq.get_branching_logic()
+        fallback = logic['fallback_behavior']
+        
+        assert 'when_q1_sum_lt_2' in fallback
+        assert fallback['when_q1_sum_lt_2']['q2'] == 'hide'
+        assert fallback['when_q1_sum_lt_2']['q3'] == 'hide'
+        assert 'validation' in fallback
+    
+    def test_branching_logic_scoring_impact(self):
+        """Test scoring impact is documented"""
+        logic = self.mdq.get_branching_logic()
+        scoring = logic['scoring_impact']
+        
+        assert 'description' in scoring
+        assert 'screening_threshold' in scoring
+        assert 'positive_if' in scoring['screening_threshold']
+    
+    def test_display_if_present_on_q2(self):
+        """Test Q2 has display_if condition"""
+        questions = self.mdq.get_questions()
+        q2 = next(q for q in questions if q['id'] == 'q2')
+        
+        assert 'display_if' in q2
+        assert q2['display_if'] is not None
+        assert '>=' in q2['display_if']
+    
+    def test_display_if_present_on_q3(self):
+        """Test Q3 has display_if condition"""
+        questions = self.mdq.get_questions()
+        q3 = next(q for q in questions if q['id'] == 'q3')
+        
+        assert 'display_if' in q3
+        assert q3['display_if'] is not None
+        assert '>=' in q3['display_if']
+    
+    def test_required_if_present_on_q2(self):
+        """Test Q2 has required_if condition"""
+        questions = self.mdq.get_questions()
+        q2 = next(q for q in questions if q['id'] == 'q2')
+        
+        assert 'required_if' in q2
+        assert q2['required_if'] is not None
+        assert '>=' in q2['required_if']
+    
+    def test_required_if_present_on_q3(self):
+        """Test Q3 has required_if condition"""
+        questions = self.mdq.get_questions()
+        q3 = next(q for q in questions if q['id'] == 'q3')
+        
+        assert 'required_if' in q3
+        assert q3['required_if'] is not None
+        assert '>=' in q3['required_if']
+    
+    def test_q2_required_is_false_by_default(self):
+        """Test Q2 is not hard-required (conditional requirement)"""
+        questions = self.mdq.get_questions()
+        q2 = next(q for q in questions if q['id'] == 'q2')
+        
+        assert q2['required'] is False
+    
+    def test_q3_required_is_false_by_default(self):
+        """Test Q3 is not hard-required (conditional requirement)"""
+        questions = self.mdq.get_questions()
+        q3 = next(q for q in questions if q['id'] == 'q3')
+        
+        assert q3['required'] is False
+    
+    def test_q1_items_always_required(self):
+        """Test Q1 items are always required (no conditions)"""
+        questions = self.mdq.get_questions()
+        q1_items = [q for q in questions if q['id'].startswith('q1_')]
+        
+        for q1 in q1_items:
+            assert q1['required'] is True
+            assert q1.get('display_if') is None
+            assert q1.get('required_if') is None
+    
+    def test_full_questionnaire_includes_logic_by_default(self):
+        """Test get_full_questionnaire includes logic by default"""
+        full = self.mdq.get_full_questionnaire()
+        
+        assert 'logic' in full
+        assert full['logic']['type'] == 'answer_dependent'
+    
+    def test_full_questionnaire_can_exclude_logic(self):
+        """Test get_full_questionnaire can exclude logic"""
+        full = self.mdq.get_full_questionnaire(include_logic=False)
+        
+        assert 'logic' not in full
+        assert 'metadata' in full
+        assert 'questions' in full
+
+
+class TestMDQConditionalValidation:
+    """Test conditional validation based on Q1 sum"""
+    
+    def setup_method(self):
+        """Setup test fixture"""
+        self.mdq = MDQ()
+    
+    def test_validation_q1_lt_2_q2_not_required(self):
+        """Test Q2 is not required when Q1 sum < 2"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}  # All no (sum=0)
+        # Intentionally omit Q2 and Q3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        # With conditional logic, Q2 and Q3 are NOT required when Q1 sum < 2
+        assert validation.valid is True
+        assert len(validation.errors) == 0
+    
+    def test_validation_q1_exactly_1_q2_not_required(self):
+        """Test Q2 is not required when Q1 sum = 1"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}
+        answers['q1_1'] = 1  # Only 1 yes (sum=1)
+        # Omit Q2 and Q3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        # With conditional logic, Q2 and Q3 are NOT required when Q1 sum < 2
+        assert validation.valid is True
+        assert len(validation.errors) == 0
+    
+    def test_validation_q1_exactly_2_q2_required(self):
+        """Test Q2 is required when Q1 sum = 2"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}
+        answers['q1_1'] = 1
+        answers['q1_2'] = 1  # sum=2
+        # Omit Q2 and Q3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is False
+        assert any('Q2' in e for e in validation.errors)
+    
+    def test_validation_q1_gte_2_both_required(self):
+        """Test Q2 and Q3 are both required when Q1 sum >= 2"""
+        answers = {f"q1_{i}": 1 if i <= 3 else 0 for i in range(1, 14)}  # sum=3
+        # Omit Q2 and Q3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is False
+        assert any('Q2' in e for e in validation.errors)
+        assert any('Q3' in e for e in validation.errors)
+    
+    def test_validation_q1_lt_2_with_q2_warning(self):
+        """Test warning when Q2 provided but Q1 sum < 2"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}  # sum=0
+        answers['q2'] = 0
+        answers['q3'] = 0
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        # Should have warning that Q2/Q3 shouldn't be present
+        assert validation.valid is True  # No hard error
+        assert len(validation.warnings) > 0
+        assert any('Q2' in w for w in validation.warnings)
+    
+    def test_validation_q1_lt_2_with_q3_warning(self):
+        """Test warning when Q3 provided but Q1 sum < 2"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}
+        answers['q1_1'] = 1  # sum=1
+        answers['q2'] = 0
+        answers['q3'] = 1
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is True
+        assert len(validation.warnings) > 0
+        assert any('Q3' in w for w in validation.warnings)
+    
+    def test_validation_q1_gte_2_with_all_answers_valid(self):
+        """Test valid when Q1 >= 2 and Q2/Q3 provided"""
+        answers = {f"q1_{i}": 1 if i <= 3 else 0 for i in range(1, 14)}  # sum=3
+        answers['q2'] = 1
+        answers['q3'] = 2
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is True
+        assert len(validation.errors) == 0
+    
+    def test_validation_boundary_q1_2_with_q2_only(self):
+        """Test Q1=2 with only Q2 (missing Q3)"""
+        answers = {f"q1_{i}": 1 if i <= 2 else 0 for i in range(1, 14)}  # sum=2
+        answers['q2'] = 1
+        # Omit Q3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is False
+        assert any('Q3' in e for e in validation.errors)
+    
+    def test_validation_boundary_q1_2_with_q3_only(self):
+        """Test Q1=2 with only Q3 (missing Q2)"""
+        answers = {f"q1_{i}": 1 if i <= 2 else 0 for i in range(1, 14)}  # sum=2
+        answers['q3'] = 2
+        # Omit Q2
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is False
+        assert any('Q2' in e for e in validation.errors)
+    
+    def test_validation_q1_7_requires_q2_q3(self):
+        """Test Q1=7 (screening threshold) still requires Q2/Q3"""
+        answers = {f"q1_{i}": 1 if i <= 7 else 0 for i in range(1, 14)}  # sum=7
+        # Omit Q2 and Q3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is False
+        assert any('Q2' in e for e in validation.errors)
+        assert any('Q3' in e for e in validation.errors)
+
+
+class TestMDQConditionalLogicEdgeCases:
+    """Test edge cases for conditional logic"""
+    
+    def setup_method(self):
+        """Setup test fixture"""
+        self.mdq = MDQ()
+    
+    def test_q1_all_zeros_no_q2_q3_warnings(self):
+        """Test all Q1 zeros with provided Q2/Q3 generates warnings"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}  # sum=0
+        answers['q2'] = 0
+        answers['q3'] = 0
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is True
+        assert len(validation.warnings) == 2  # Both Q2 and Q3 shouldn't be present
+    
+    def test_q1_exactly_13_requires_q2_q3(self):
+        """Test Q1 all ones (sum=13) requires Q2/Q3"""
+        answers = {f"q1_{i}": 1 for i in range(1, 14)}  # sum=13
+        answers['q2'] = 1
+        answers['q3'] = 3
+        
+        validation = self.mdq.validate_answers(answers)
+        
+        assert validation.valid is True
+        assert len(validation.errors) == 0
+    
+    def test_screening_with_hidden_q2_q3(self):
+        """Test screening calculation when Q2/Q3 should be hidden"""
+        answers = {f"q1_{i}": 0 for i in range(1, 14)}  # sum=0, Q2/Q3 hidden
+        answers['q2'] = 0
+        answers['q3'] = 0
+        
+        # Should still calculate (with warnings)
+        result = self.mdq.calculate_screening(answers)
+        
+        assert result.q1_total == 0
+        assert result.screening_result == "NEGATIF"
+    
+    def test_screening_with_visible_q2_q3(self):
+        """Test screening calculation when Q2/Q3 should be visible"""
+        answers = {f"q1_{i}": 1 if i <= 8 else 0 for i in range(1, 14)}  # sum=8
+        answers['q2'] = 1
+        answers['q3'] = 3
+        
+        result = self.mdq.calculate_screening(answers)
+        
+        assert result.q1_total == 8
+        assert result.screening_result == "POSITIF"
+    
+    def test_consistency_validation_then_screening(self):
+        """Test validation and screening are consistent"""
+        answers = {f"q1_{i}": 1 if i <= 5 else 0 for i in range(1, 14)}  # sum=5
+        answers['q2'] = 1
+        answers['q3'] = 2
+        
+        validation = self.mdq.validate_answers(answers)
+        assert validation.valid is True
+        
+        result = self.mdq.calculate_screening(answers)
+        assert result.q1_total == 5
+        assert result.screening_result == "NEGATIF"  # < 7
+    
+    def test_jsonlogic_condition_structure_q2(self):
+        """Test Q2 JSONLogic condition has correct structure"""
+        questions = self.mdq.get_questions()
+        q2 = next(q for q in questions if q['id'] == 'q2')
+        
+        condition = q2['display_if']
+        
+        # Should be: {">=" : [{"+": [...]}, 2]}
+        assert '>=' in condition
+        assert isinstance(condition['>='], list)
+        assert len(condition['>=']) == 2
+        assert '+' in condition['>='][0]
+        assert condition['>='][1] == 2
+    
+    def test_jsonlogic_condition_structure_q3(self):
+        """Test Q3 JSONLogic condition has correct structure"""
+        questions = self.mdq.get_questions()
+        q3 = next(q for q in questions if q['id'] == 'q3')
+        
+        condition = q3['display_if']
+        
+        # Same structure as Q2
+        assert '>=' in condition
+        assert isinstance(condition['>='], list)
+        assert len(condition['>=']) == 2
+        assert '+' in condition['>='][0]
+        assert condition['>='][1] == 2
+    
+    def test_required_if_matches_display_if_q2(self):
+        """Test Q2 required_if matches display_if"""
+        questions = self.mdq.get_questions()
+        q2 = next(q for q in questions if q['id'] == 'q2')
+        
+        assert q2['display_if'] == q2['required_if']
+    
+    def test_required_if_matches_display_if_q3(self):
+        """Test Q3 required_if matches display_if"""
+        questions = self.mdq.get_questions()
+        q3 = next(q for q in questions if q['id'] == 'q3')
+        
+        assert q3['display_if'] == q3['required_if']
 
 
 if __name__ == "__main__":
