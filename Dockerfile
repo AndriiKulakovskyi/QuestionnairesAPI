@@ -4,11 +4,13 @@ FROM node:18-slim
 # Set working directory
 WORKDIR /app
 
-# Install Python 3.12, pip, supervisor, and other dependencies
+# Install Python 3.11 (available in Debian 12), pip, supervisor, and build dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
+    build-essential \
     supervisor \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -20,15 +22,18 @@ RUN curl -sSL https://install.python-poetry.org | python3 - \
 # Copy frontend package files
 COPY app/package*.json ./app/
 
-# Install frontend dependencies
+# Install frontend dependencies (including devDependencies needed for build)
 WORKDIR /app/app
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy frontend source
 COPY app/ ./
 
 # Build Next.js application
 RUN npm run build
+
+# Remove devDependencies to reduce image size
+RUN npm prune --production
 
 # Switch back to root directory for backend
 WORKDIR /app
@@ -42,8 +47,8 @@ COPY run_api.py ./
 # Configure Poetry to not create virtual environment (since we're in a container)
 RUN poetry config virtualenvs.create false
 
-# Install Python dependencies
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install Python dependencies (only main/production dependencies)
+RUN poetry install --only=main --no-interaction --no-ansi
 
 # Copy supervisord configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf

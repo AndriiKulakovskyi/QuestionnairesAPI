@@ -149,5 +149,6 @@ Thumbs.db
 # Project specific
 *.json
 !package.json
+!package-lock.json
 /data/
 /logs/
