@@ -19,15 +19,13 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sSL https://install.python-poetry.org | python3 - \
     && ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-# Copy frontend package files
-COPY app/package*.json ./app/
-
-# Install frontend dependencies (including devDependencies needed for build)
-WORKDIR /app/app
+# Copy frontend package files and install dependencies
+WORKDIR /app/frontend
+COPY app/package*.json ./
 RUN npm ci
 
-# Copy frontend source
-COPY app/ ./
+# Copy all Next.js source files
+COPY app/ .
 
 # Build Next.js application
 RUN npm run build
@@ -35,7 +33,7 @@ RUN npm run build
 # Remove devDependencies to reduce image size
 RUN npm prune --production
 
-# Switch back to root directory for backend
+# Switch to app root directory
 WORKDIR /app
 
 # Copy Python project files
