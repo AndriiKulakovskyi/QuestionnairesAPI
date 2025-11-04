@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-EQ-5D-EL (EuroQol 5 Dimensions - Enhanced Level)
+EQ-5D-5L (EuroQol 5 Dimensions 5 Levels)
 French version - Generic measure of health status
 
 SCORING METHODOLOGY:
 ===================
 
-The EQ-5D-EL generates two types of scores:
+The EQ-5D-5L generates three types of scores:
 
 1. HEALTH STATE PROFILE (5-digit code)
    - Concatenates responses from 5 dimensions (Q1-Q5)
@@ -26,15 +26,14 @@ The EQ-5D-EL generates two types of scores:
    - 100 = Best imaginable health
    - Captures subjective perception of overall health
 
-3. INDEX VALUE (Optional, requires external data)
+3. INDEX VALUE (Utility Score)
    - Converts health state profile to single utility value
-   - Uses country-specific value sets (France: Crosswalk method)
-   - Range: -0.59 to 1.0
+   - Uses France-specific value set (Crosswalk method)
+   - Range: -0.530 to 1.000
      * 1.0 = Perfect health (11111)
      * 0.0 = Death
      * <0.0 = States worse than death
-   - Requires: EQ-5D-5L Crosswalk Index Value Calculator (Excel)
-   - NOT automatically calculated by this implementation
+   - Automatically calculated using built-in France crosswalk table
 
 CLINICAL INTERPRETATION:
 - Profile shows specific problem areas
@@ -46,10 +45,11 @@ CLINICAL INTERPRETATION:
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from pydantic import BaseModel
+from .france_crosswalk import FRANCE_CROSSWALK
 
 
-class EQ5DELError(ValueError):
-    """Custom exception for EQ-5D-EL validation errors"""
+class EQ5D5LError(ValueError):
+    """Custom exception for EQ-5D-5L validation errors"""
     pass
 
 
@@ -95,9 +95,9 @@ class ValidationResult(BaseModel):
     warnings: List[str] = []
 
 
-class EQ5DEL:
+class EQ5D5L:
     """
-    EQ-5D-EL Questionnaire Class
+    EQ-5D-5L Questionnaire Class
     
     Provides methods to:
     - Retrieve instrument metadata
@@ -105,12 +105,13 @@ class EQ5DEL:
     - Validate answers
     - Generate health state profile (5-digit code)
     - Calculate VAS score
+    - Calculate utility index using France crosswalk
     - Provide clinical interpretation
     """
     
-    INSTRUMENT_ID = "EQ-5D-EL.fr"
-    INSTRUMENT_NAME = "EQ-5D-EL – Version française"
-    ABBREVIATION = "EQ-5D-EL"
+    INSTRUMENT_ID = "EQ-5D-5L.fr"
+    INSTRUMENT_NAME = "EQ-5D-5L – Version française"
+    ABBREVIATION = "EQ-5D-5L"
     LANGUAGE = "fr-FR"
     VERSION = "1.0"
     REFERENCE_PERIOD = "AUJOURD'HUI"
@@ -163,7 +164,7 @@ class EQ5DEL:
     ]
     
     def __init__(self):
-        """Initialize the EQ-5D-EL questionnaire"""
+        """Initialize the EQ-5D-5L questionnaire"""
         self._sections = self._build_sections()
         self._questions = self._build_questions()
     
@@ -234,15 +235,15 @@ class EQ5DEL:
             "reference_period": self.REFERENCE_PERIOD,
             "description": "Mesure générique de l'état de santé : 5 dimensions à 5 niveaux (profil 11111–55555) et une échelle visuelle analogique (EQ VAS 0–100).",
             "sources": [
-                "EQ-5D-EL.pdf (version FR)",
-                "EQ5DEL_CotationScore.docx (cotation et crosswalk)",
-                "EQ-5D-EL_Crosswalk_Index_Value_Calculator.xls (value sets – France)"
+                "EQ-5D-5L.pdf (version FR)",
+                "EQ5D5L_CotationScore.docx (cotation et crosswalk)",
+                "EQ-5D-5L_Crosswalk_Index_Value_Calculator.xls (value sets – France)"
             ],
             "total_questions": 6,
             "dimensions": 5,
             "profile_range": ["11111", "55555"],
             "vas_range": [0, 100],
-            "index_range": [-0.59, 1.0]
+            "index_range": [-0.530, 1.000]
         }
     
     def get_sections(self) -> List[Dict[str, Any]]:
@@ -336,15 +337,16 @@ class EQ5DEL:
     
     def calculate_score(self, answers: Dict[str, int]) -> ScoreResult:
         """
-        Calculate EQ-5D-EL profile and scores
+        Calculate EQ-5D-5L profile, VAS score, and utility index
         
         SCORING PROCESS:
         ---------------
         1. Validate all answers (q1-q5: 1-5, vas: 0-100)
         2. Generate 5-digit health state profile by concatenating q1...q5
         3. Extract VAS score directly from 'vas' answer
-        4. Create dimensions dictionary (dimension name -> level)
-        5. Generate clinical interpretation
+        4. Look up utility index from France crosswalk table
+        5. Create dimensions dictionary (dimension name -> level)
+        6. Generate clinical interpretation
         
         EXAMPLE:
         --------
@@ -352,6 +354,7 @@ class EQ5DEL:
         Output:
           - profile: "21341"
           - vas_score: 75
+          - index_value: 0.474 (from France crosswalk)
           - dimensions: {
               "Mobilité": 2,
               "Autonomie": 1,
@@ -360,21 +363,20 @@ class EQ5DEL:
               "Anxiété/Dépression": 1
             }
           - interpretation: Clinical text describing health state
-          - index_value: None (requires external crosswalk table)
         
         Args:
             answers: Dictionary with keys 'q1' through 'q5' (values 1-5) and 'vas' (value 0-100)
             
         Returns:
-            ScoreResult with profile, VAS score, dimensions, and interpretation
+            ScoreResult with profile, VAS score, utility index, dimensions, and interpretation
             
         Raises:
-            EQ5DELError: If validation fails
+            EQ5D5LError: If validation fails
         """
         # Validate answers
         validation = self.validate_answers(answers)
         if not validation.valid:
-            raise EQ5DELError("; ".join(validation.errors))
+            raise EQ5D5LError("; ".join(validation.errors))
         
         # Generate 5-digit profile (e.g., "21341")
         profile = "".join(str(answers[f"q{i}"]) for i in range(1, 6))
@@ -382,23 +384,20 @@ class EQ5DEL:
         # Get VAS score
         vas_score = answers["vas"]
         
+        # Look up utility index from France crosswalk table
+        index_value = FRANCE_CROSSWALK.get(profile)
+        if index_value is None:
+            raise EQ5D5LError(f"Profile {profile} not found in France crosswalk table")
+        
         # Get dimension values
         dimensions = {
             self.DIMENSION_NAMES[i]: answers[f"q{i+1}"]
             for i in range(5)
         }
         
-        # Note: Index value calculation requires external crosswalk table
-        # To calculate index:
-        # 1. Load EQ-5D-EL_Crosswalk_Index_Value_Calculator.xls
-        # 2. Find row matching profile (e.g., "21341")
-        # 3. Extract France column value (e.g., 0.474)
-        # This is not automatically calculated by this implementation
-        index_value = None
-        
         # Build interpretation
         interpretation = self._build_interpretation(
-            profile, vas_score, dimensions, validation.warnings
+            profile, vas_score, index_value, dimensions, validation.warnings
         )
         
         return ScoreResult(
@@ -413,12 +412,14 @@ class EQ5DEL:
         self,
         profile: str,
         vas_score: int,
+        index_value: float,
         dimensions: Dict[str, int],
         warnings: List[str]
     ) -> str:
         """Build clinical interpretation text"""
         interpretation = f"Profil de santé: {profile}. "
         interpretation += f"Score VAS: {vas_score}/100. "
+        interpretation += f"Index d'utilité (France): {index_value:.3f}. "
         
         # Interpret profile
         if profile == "11111":
@@ -443,15 +444,19 @@ class EQ5DEL:
         else:
             interpretation += "VAS bas - perception défavorable de l'état de santé. "
         
+        # Interpret utility index
+        if index_value >= 0.8:
+            interpretation += "Index d'utilité élevé - très bonne qualité de vie. "
+        elif index_value >= 0.5:
+            interpretation += "Index d'utilité modéré - qualité de vie acceptable. "
+        elif index_value >= 0:
+            interpretation += "Index d'utilité bas - qualité de vie altérée. "
+        else:
+            interpretation += "Index d'utilité négatif - état jugé pire que la mort. "
+        
         # Add warnings
         if warnings:
             interpretation += " ".join(warnings) + " "
-        
-        # Note about index calculation
-        interpretation += (
-            "Note: Le calcul de l'index de valeur pour la France nécessite "
-            "le tableau de correspondance EQ-5D-EL Crosswalk."
-        )
         
         return interpretation.strip()
     
@@ -485,10 +490,10 @@ class EQ5DEL:
             }
         """
         if len(profile) != 5 or not profile.isdigit():
-            raise EQ5DELError(f"Profil invalide: {profile}. Doit être 5 chiffres 1-5.")
+            raise EQ5D5LError(f"Profil invalide: {profile}. Doit être 5 chiffres 1-5.")
         
         if not all(1 <= int(d) <= 5 for d in profile):
-            raise EQ5DELError(f"Profil invalide: {profile}. Chaque chiffre doit être 1-5.")
+            raise EQ5D5LError(f"Profil invalide: {profile}. Chaque chiffre doit être 1-5.")
         
         description = {}
         for i, digit in enumerate(profile):

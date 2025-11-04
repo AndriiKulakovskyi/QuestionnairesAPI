@@ -1,8 +1,8 @@
-# EQ-5D-EL (EuroQol 5 Dimensions 5 Levels)
+# EQ-5D-5L (EuroQol 5 Dimensions 5 Levels)
 
 ## Overview
 
-The EQ-5D-EL is a standardized, generic measure of health-related quality of life developed by the EuroQol Group. It provides a simple, generic measure of health for clinical and economic appraisal.
+The EQ-5D-5L is a standardized, generic measure of health-related quality of life developed by the EuroQol Group. It provides a simple, generic measure of health for clinical and economic appraisal.
 
 ## Structure
 
@@ -49,20 +49,20 @@ The 5 dimensions create a 5-digit health state profile:
 ## Index Values
 
 Health state profiles can be converted to index values using country-specific value sets:
-- **France**: Uses EQ-5D-EL Crosswalk methodology
+- **France**: Uses EQ-5D-5L Crosswalk methodology
 - Index range: -0.59 to 1.0
   - 1.0 = Full health (11111)
   - 0 = Death
   - Negative values = States worse than death
-- Requires: EQ-5D-EL Crosswalk Index Value Calculator (Excel file)
+- Requires: EQ-5D-5L Crosswalk Index Value Calculator (Excel file)
 
 ## Scoring
 
 ### Profile Generation
 ```python
-from questionnaires import EQ5DEL
+from questionnaires import EQ5D5L
 
-eq5d = EQ5DEL()
+eq5d = EQ5D5L()
 
 answers = {
     "q1": 2,  # Slight mobility problems
@@ -133,10 +133,10 @@ Converts 5-digit profile to human-readable descriptions for each dimension.
 ## Example Usage
 
 ```python
-from questionnaires import EQ5DEL
+from questionnaires import EQ5D5L
 
 # Initialize
-eq5d = EQ5DEL()
+eq5d = EQ5D5L()
 
 # Get questionnaire for frontend
 questionnaire = eq5d.get_full_questionnaire()
@@ -192,7 +192,7 @@ for dimension, text in description.items():
 ## References
 
 1. **EuroQol Group**
-   - EQ-5D-EL User Guide (2019)
+   - EQ-5D-5L User Guide (2019)
    - Website: https://euroqol.org/
 
 2. **French Value Set**
@@ -200,8 +200,8 @@ for dimension, text in description.items():
    - French tariff for health state valuation
 
 3. **Methodology**
-   - Herdman M, et al. Development and preliminary testing of the new five-level version of EQ-5D (EQ-5D-EL). Qual Life Res. 2011;20(10):1727-36.
-   - van Hout B, et al. Interim scoring for the EQ-5D-EL: mapping the EQ-5D-EL to EQ-5D-3L value sets. Value Health. 2012;15(5):708-15.
+   - Herdman M, et al. Development and preliminary testing of the new five-level version of EQ-5D (EQ-5D-5L). Qual Life Res. 2011;20(10):1727-36.
+   - van Hout B, et al. Interim scoring for the EQ-5D-5L: mapping the EQ-5D-5L to EQ-5D-3L value sets. Value Health. 2012;15(5):708-15.
 
 ## License
 

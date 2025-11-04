@@ -1,8 +1,8 @@
-# EQ-5D-EL Scoring Methodology
+# EQ-5D-5L Scoring Methodology
 
 ## Overview
 
-The EQ-5D-EL produces **three types of outputs** from patient responses:
+The EQ-5D-5L produces **three types of outputs** from patient responses:
 
 1. **Health State Profile** (5-digit code)
 2. **VAS Score** (0-100)
@@ -78,62 +78,47 @@ Used in health economics (QALYs for cost-effectiveness studies).
 ### Range
 - **1.0** = Perfect health (profile 11111)
 - **0.0** = Dead
-- **Negative values** = States considered worse than death
+- **Negative values** = States considered worse than death (range: -0.530 to 1.000 for France)
 
 ### How it's calculated
 
-**IMPORTANT:** Index calculation is **NOT performed automatically** by this implementation.
+**The index is automatically calculated** using the built-in France crosswalk value set.
 
-It requires an **external crosswalk table** specific to each country:
+The implementation includes a lookup table with all 3,125 possible profiles:
 
 #### Process:
 1. **Input:** Health state profile (e.g., "21341")
-2. **Look up** in: `EQ-5D-EL_Crosswalk_Index_Value_Calculator.xls`
-3. **Find** the row matching "21341"
-4. **Extract** the value from the "France" column
-5. **Output:** Index value (e.g., 0.474)
+2. **Automatic lookup** in the built-in France crosswalk table
+3. **Output:** Index value (e.g., 0.474)
 
-#### Example (from documentation):
+#### Example:
 | Profile | France Index |
 |---------|--------------|
 | 11111   | 1.000        |
 | 21341   | 0.474        |
-| 55555   | -0.590       |
+| 55555   | -0.530       |
 
-### Why it's not automatic
-- Requires large Excel file (value sets for multiple countries)
-- Different value sets for different populations
-- Licensing considerations for value set data
-- Implementation choice: keep library lightweight
+### Implementation
 
-### How to add index calculation
-
-If you need index values, you can extend the implementation:
+The index value is automatically calculated when you call `calculate_score()`:
 
 ```python
-import pandas as pd
+from questionnaires import EQ5D5L
 
-def calculate_index(profile: str, crosswalk_path: str) -> float:
-    """Calculate EQ-5D-EL index value for France"""
-    # Load crosswalk Excel file
-    df = pd.read_excel(crosswalk_path, sheet_name="EQ-5D-EL Value Sets")
-    
-    # Find profile
-    row = df[df['state'] == profile]
-    
-    if row.empty:
-        raise ValueError(f"Profile {profile} not found")
-    
-    # Extract France column
-    index = float(row['france_index'].iloc[0])
-    
-    return index
+eq5d5l = EQ5D5L()
 
-# Usage
-profile = "21341"
-index = calculate_index(profile, "EQ-5D-EL_Crosswalk_Index_Value_Calculator.xls")
-print(f"Profile {profile} = Index {index}")  # 0.474
+answers = {
+    "q1": 2, "q2": 1, "q3": 3, "q4": 4, "q5": 1,
+    "vas": 75
+}
+
+result = eq5d5l.calculate_score(answers)
+print(f"Profile: {result.profile}")        # "21341"
+print(f"VAS: {result.vas_score}")          # 75
+print(f"Index: {result.index_value}")      # 0.474
 ```
+
+The implementation uses a built-in lookup table containing all 3,125 possible profiles with their corresponding France crosswalk utility values.
 
 ---
 
@@ -141,9 +126,9 @@ print(f"Profile {profile} = Index {index}")  # 0.474
 
 ### Input
 ```python
-from questionnaires import EQ5DEL
+from questionnaires import EQ5D5L
 
-eq5del = EQ5DEL()
+eq5d5l = EQ5D5L()
 
 answers = {
     "q1": 2,  # Mobility: slight problems
@@ -157,10 +142,11 @@ answers = {
 
 ### Output
 ```python
-result = eq5del.calculate_score(answers)
+result = eq5d5l.calculate_score(answers)
 
 print(result.profile)       # "21341"
 print(result.vas_score)     # 75
+print(result.index_value)   # 0.474 (from France crosswalk)
 print(result.dimensions)    # {
                             #   "Mobilité": 2,
                             #   "Autonomie": 1,
@@ -168,8 +154,7 @@ print(result.dimensions)    # {
                             #   "Douleurs/Gêne": 4,
                             #   "Anxiété/Dépression": 1
                             # }
-print(result.index_value)   # None (not calculated)
-print(result.interpretation) # "Profil de santé: 21341. Score VAS: 75/100. ..."
+print(result.interpretation) # "Profil de santé: 21341. Score VAS: 75/100. Index d'utilité (France): 0.474..."
 ```
 
 ### Clinical Interpretation
@@ -251,13 +236,13 @@ validation = eq5del.validate_answers(answers)
 ## References
 
 1. **EuroQol Group (2019)**
-   - EQ-5D-EL User Guide
+   - EQ-5D-5L User Guide
    - https://euroqol.org/
 
 2. **Crosswalk Methodology**
-   - van Hout B, et al. "Interim scoring for the EQ-5D-EL: mapping the EQ-5D-EL to EQ-5D-3L value sets." *Value Health.* 2012;15(5):708-15.
+   - van Hout B, et al. "Interim scoring for the EQ-5D-5L: mapping the EQ-5D-5L to EQ-5D-3L value sets." *Value Health.* 2012;15(5):708-15.
 
 3. **French Value Set**
-   - EQ-5D-EL Crosswalk Index Value Calculator
+   - EQ-5D-5L Crosswalk Index Value Calculator
    - France-specific tariff values
 

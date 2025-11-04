@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Comprehensive unit tests for EQ-5D-EL questionnaire
+Comprehensive unit tests for EQ-5D-5L questionnaire
 Tests metadata, questions, validation, profile generation, and edge cases
 """
 
 import pytest
-from questionnaires.auto.eq5del import EQ5DEL, EQ5DELError, ScoreResult, ValidationResult
+from questionnaires.auto.eq5del import EQ5D5L, EQ5D5LError, ScoreResult, ValidationResult
 
 
-class TestEQ5DELMetadata:
-    """Test EQ-5D-EL metadata and structure retrieval"""
+class TestEQ5D5LMetadata:
+    """Test EQ-5D-5L metadata and structure retrieval"""
     
     def setup_method(self):
         """Setup test fixture"""
-        self.eq5d = EQ5DEL()
+        self.eq5d = EQ5D5L()
     
     def test_get_metadata(self):
         """Test metadata retrieval"""
         metadata = self.eq5d.get_metadata()
         
-        assert metadata['id'] == 'EQ-5D-EL.fr'
-        assert metadata['abbreviation'] == 'EQ-5D-EL'
+        assert metadata['id'] == 'EQ-5D-5L.fr'
+        assert metadata['abbreviation'] == 'EQ-5D-5L'
         assert metadata['language'] == 'fr-FR'
         assert metadata['version'] == '1.0'
         assert metadata['reference_period'] == 'AUJOURD\'HUI'
@@ -28,7 +28,7 @@ class TestEQ5DELMetadata:
         assert metadata['dimensions'] == 5
         assert metadata['profile_range'] == ["11111", "55555"]
         assert metadata['vas_range'] == [0, 100]
-        assert metadata['index_range'] == [-0.59, 1.0]
+        assert metadata['index_range'] == [-0.530, 1.000]
         assert 'sources' in metadata
     
     def test_get_sections(self):
@@ -126,12 +126,12 @@ class TestEQ5DELMetadata:
         assert len(full['sections']) == 2
 
 
-class TestEQ5DELValidation:
+class TestEQ5D5LValidation:
     """Test EQ-5D-EL answer validation"""
     
     def setup_method(self):
         """Setup test fixture"""
-        self.eq5d = EQ5DEL()
+        self.eq5d = EQ5D5L()
     
     def test_valid_answers_all_ones(self):
         """Test validation with perfect health (11111)"""
@@ -246,12 +246,12 @@ class TestEQ5DELValidation:
         assert any('incohérence' in w.lower() for w in validation.warnings)
 
 
-class TestEQ5DELScoring:
+class TestEQ5D5LScoring:
     """Test EQ-5D-EL profile generation and scoring"""
     
     def setup_method(self):
         """Setup test fixture"""
-        self.eq5d = EQ5DEL()
+        self.eq5d = EQ5D5L()
     
     def test_profile_perfect_health(self):
         """Test profile generation for perfect health (11111)"""
@@ -319,15 +319,20 @@ class TestEQ5DELScoring:
             result = self.eq5d.calculate_score(answers)
             assert result.vas_score == vas_val
     
-    def test_index_value_placeholder(self):
-        """Test that index value is None (requires crosswalk)"""
-        answers = {f"q{i}": 2 for i in range(1, 6)}
-        answers['vas'] = 70
+    def test_index_value_calculated(self):
+        """Test that index value is calculated from France crosswalk"""
+        answers = {
+            "q1": 2, "q2": 1, "q3": 3, "q4": 4, "q5": 1,
+            "vas": 75
+        }
         result = self.eq5d.calculate_score(answers)
         
-        # Index requires crosswalk table, so should be None
-        assert result.index_value is None
-        assert "crosswalk" in result.interpretation.lower() or "correspondance" in result.interpretation.lower()
+        # Index should be calculated from France crosswalk table
+        # Profile 21341 should have index 0.474
+        assert result.index_value is not None
+        assert result.profile == "21341"
+        assert abs(result.index_value - 0.474) < 0.001
+        assert "utilité" in result.interpretation.lower()
     
     def test_interpretation_includes_profile(self):
         """Test that interpretation includes profile"""
@@ -357,21 +362,21 @@ class TestEQ5DELScoring:
         assert "bas" in result.interpretation.lower() or "défavorable" in result.interpretation.lower()
     
     def test_score_with_invalid_answers_raises_error(self):
-        """Test that invalid answers raise EQ5DELError"""
+        """Test that invalid answers raise EQ5D5LError"""
         answers = {"q1": 1, "q2": 2}  # Missing items
         
-        with pytest.raises(EQ5DELError) as exc_info:
+        with pytest.raises(EQ5D5LError) as exc_info:
             self.eq5d.calculate_score(answers)
         
         assert "Items manquants" in str(exc_info.value)
 
 
-class TestEQ5DELProfileDescription:
+class TestEQ5D5LProfileDescription:
     """Test profile description functionality"""
     
     def setup_method(self):
         """Setup test fixture"""
-        self.eq5d = EQ5DEL()
+        self.eq5d = EQ5D5L()
     
     def test_get_profile_description_perfect_health(self):
         """Test profile description for perfect health"""
@@ -401,32 +406,32 @@ class TestEQ5DELProfileDescription:
     
     def test_invalid_profile_length(self):
         """Test that invalid profile length raises error"""
-        with pytest.raises(EQ5DELError):
+        with pytest.raises(EQ5D5LError):
             self.eq5d.get_profile_description("1234")  # Too short
         
-        with pytest.raises(EQ5DELError):
+        with pytest.raises(EQ5D5LError):
             self.eq5d.get_profile_description("123456")  # Too long
     
     def test_invalid_profile_characters(self):
         """Test that invalid characters raise error"""
-        with pytest.raises(EQ5DELError):
+        with pytest.raises(EQ5D5LError):
             self.eq5d.get_profile_description("1234a")  # Letter
         
-        with pytest.raises(EQ5DELError):
+        with pytest.raises(EQ5D5LError):
             self.eq5d.get_profile_description("12346")  # 6 is invalid
     
     def test_invalid_profile_zero(self):
         """Test that 0 in profile raises error"""
-        with pytest.raises(EQ5DELError):
+        with pytest.raises(EQ5D5LError):
             self.eq5d.get_profile_description("01234")  # 0 is invalid
 
 
-class TestEQ5DELEdgeCases:
+class TestEQ5D5LEdgeCases:
     """Test edge cases and special scenarios"""
     
     def setup_method(self):
         """Setup test fixture"""
-        self.eq5d = EQ5DEL()
+        self.eq5d = EQ5D5L()
     
     def test_all_profiles_use_same_dimensions(self):
         """Test that all profiles use the same 5 dimensions"""
@@ -481,12 +486,12 @@ class TestEQ5DELEdgeCases:
             assert result.profile == expected_profile
 
 
-class TestEQ5DELIntegration:
+class TestEQ5D5LIntegration:
     """Integration tests for complete EQ-5D-EL workflow"""
     
     def setup_method(self):
         """Setup test fixture"""
-        self.eq5d = EQ5DEL()
+        self.eq5d = EQ5D5L()
     
     def test_complete_workflow_healthy_patient(self):
         """Test complete workflow for healthy patient"""

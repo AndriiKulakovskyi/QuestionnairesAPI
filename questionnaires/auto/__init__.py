@@ -2,7 +2,7 @@ from .qids import QIDSSR16, QIDSError
 from .mdq import MDQ, MDQError
 from .asrm import ASRM, ASRMError
 from .epworth import Epworth, EpworthError
-from .eq5del import EQ5DEL, EQ5DELError
+from .eq5del import EQ5D5L, EQ5D5LError
 from .fagerstrom import Fagerstrom, FagerstromError
 from .mars import MARS, MARSError
 from .mathys import MAThyS, MAThySError
@@ -24,7 +24,7 @@ __all__ = [
     "MDQ", "MDQError",
     "ASRM", "ASRMError",
     "Epworth", "EpworthError",
-    "EQ5DEL", "EQ5DELError",
+    "EQ5D5L", "EQ5D5LError",
     "Fagerstrom", "FagerstromError",
     "MARS", "MARSError",
     "MAThyS", "MAThySError",

@@ -4,7 +4,7 @@ Pytest configuration and shared fixtures
 """
 
 import pytest
-from questionnaires import QIDSSR16, MDQ, ASRM, Epworth, EQ5DEL, Fagerstrom
+from questionnaires import QIDSSR16, MDQ, ASRM, Epworth, EQ5D5L, Fagerstrom
 
 
 @pytest.fixture
@@ -92,7 +92,7 @@ def epworth_valid_answers_excessive():
 @pytest.fixture
 def eq5del_instance():
     """Fixture providing an EQ-5D-5L instance"""
-    return EQ5DEL()
+    return EQ5D5L()
 
 
 @pytest.fixture
@@ -112,7 +112,7 @@ def eq5del_valid_answers_moderate():
 @pytest.fixture
 def eq5d_instance():
     """Fixture providing an EQ-5D-5L instance"""
-    return EQ5DEL()
+    return EQ5D5L()
 
 
 @pytest.fixture
