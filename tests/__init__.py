@@ -1,2 +1,2 @@
-"""Test suite for the QuestionnairesAPI project."""
+# Tests package
 
