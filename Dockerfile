@@ -1,5 +1,5 @@
-# Start from Node.js 18 slim image
-FROM node:18-slim
+# Start from Node.js 20 slim image (required by Next.js 16+)
+FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
