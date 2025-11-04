@@ -1,48 +1,143 @@
 # Questionnaires API
 
-A Python implementation of clinical questionnaires (QIDS-SR16, MDQ, ASRM, Epworth, and EQ-5D-EL) designed for FastAPI integration.
+A Python implementation of psychiatric and clinical questionnaires designed for FastAPI integration. The API is organized into two categories:
+- **Auto questionnaires**: Self-report instruments completed by patients
+- **Hetero questionnaires**: Clinician-rated instruments (planned for future implementation)
 
-## Questionnaires Included
+## Auto Questionnaires (Self-Report)
 
-### 1. QIDS-SR16 (Quick Inventory of Depressive Symptomatology - Self Report 16)
-- **Purpose**: Self-assessment scale measuring depression severity
-- **Language**: French (fr-FR)
-- **Structure**: 16 items across 2 sections covering 9 DSM domains
-- **Scoring**: 0-27 total score with severity levels:
-  - 0-5: No depression
-  - 6-10: Mild depression
-  - 11-15: Moderate depression
-  - 16-20: Severe depression
-  - 21-27: Very severe depression
+All currently implemented questionnaires are self-report instruments.
 
-### 2. MDQ (Mood Disorder Questionnaire)
-- **Purpose**: Screening tool for bipolar disorder spectrum
-- **Language**: French (fr-FR)
-- **Structure**: 13 yes/no items + 2 follow-up questions
-- **Screening**: Positive if ≥7 "yes" answers + concurrent + moderate/serious impact
+### Depression and Mood Disorders
 
-### 3. ASRM (Altman Self-Rating Mania Scale)
-- **Purpose**: Self-assessment scale for manic/hypomanic symptoms
-- **Language**: French (fr-FR)
-- **Structure**: 5 items, each scored 0-4
-- **Scoring**: 0-20 total score with probability levels:
-  - 0-5: Low probability of manic/hypomanic episode
-  - 6-20: High probability of manic/hypomanic episode
+**1. QIDS-SR16 (Quick Inventory of Depressive Symptomatology - Self Report 16)**
+- Purpose: Self-assessment scale measuring depression severity
+- Language: French (fr-FR)
+- Structure: 16 items across 2 sections covering 9 DSM domains
+- Scoring: 0-27 total score with severity levels
 
-### 4. Epworth Sleepiness Scale (ESS)
-- **Purpose**: Self-assessment scale for daytime sleepiness
-- **Language**: French (fr-FR)
-- **Structure**: 8 scored items (0-3 each) + 1 optional timing question
-- **Scoring**: 0-24 total score with severity levels:
-  - 0-10: Normal sleepiness
-  - 11-24: Excessive daytime sleepiness (EDS)
+**2. MDQ (Mood Disorder Questionnaire)**
+- Purpose: Screening tool for bipolar disorder spectrum
+- Language: French (fr-FR)
+- Structure: 13 yes/no items + 2 follow-up questions
+- Screening: Positive if ≥7 "yes" + concurrent + moderate/serious impact
 
-### 5. EQ-5D-EL (EuroQol 5 Dimensions 5 Levels)
-- **Purpose**: Generic measure of health-related quality of life
-- **Language**: French (fr-FR)
-- **Structure**: 5 dimensions (1-5 scale) + Visual Analog Scale (0-100)
-- **Output**: Health state profile (e.g., "21341") + VAS score
-- **Dimensions**: Mobility, Self-care, Usual activities, Pain/Discomfort, Anxiety/Depression
+**3. ASRM (Altman Self-Rating Mania Scale)**
+- Purpose: Self-assessment scale for manic/hypomanic symptoms
+- Language: French (fr-FR)
+- Structure: 5 items, each scored 0-4
+- Scoring: 0-20 total score (cutoff: ≥6 indicates high probability)
+
+### Anxiety and Stress
+
+**4. STAI-YA (State-Trait Anxiety Inventory - Form Y-A)**
+- Purpose: State anxiety assessment
+- Language: French (fr-FR)
+- Structure: 20 items (10 reverse-scored)
+- Scoring: 20-80 total score
+
+**5. AIM-Short (Affect Intensity Measure - Short Version)**
+- Purpose: Emotional intensity assessment
+- Language: French (fr-FR)
+- Structure: Multiple subscales measuring emotional reactivity
+
+### Substance Use and Addiction
+
+**6. Fagerstrom (Fagerström Test for Nicotine Dependence - FTND)**
+- Purpose: Nicotine dependence assessment
+- Language: French (fr-FR)
+- Structure: 6 items
+- Scoring: 0-10 total score with dependence levels
+
+**7. MARS (Medication Adherence Rating Scale)**
+- Purpose: Medication adherence in psychiatry
+- Language: French (fr-FR)
+- Structure: 10 yes/no items with reverse scoring
+- Scoring: 0-10 total score
+
+### Sleep and Quality of Life
+
+**8. Epworth (Epworth Sleepiness Scale - ESS)**
+- Purpose: Daytime sleepiness assessment
+- Language: French (fr-FR)
+- Structure: 8 scored items (0-3 each)
+- Scoring: 0-24 total score (cutoff: ≥11 indicates excessive daytime sleepiness)
+
+**9. PSQI (Pittsburgh Sleep Quality Index)**
+- Purpose: Sleep quality assessment
+- Language: French (fr-FR)
+- Structure: Multiple components assessing sleep quality
+
+**10. EQ-5D-EL (EuroQol 5 Dimensions 5 Levels)**
+- Purpose: Health-related quality of life
+- Language: French (fr-FR)
+- Structure: 5 dimensions (1-5 scale) + VAS (0-100)
+- Output: Health state profile (e.g., "21341") + VAS score
+
+### Attention, Impulsivity, and Personality
+
+**11. ASRS (Adult ADHD Self-Report Scale)**
+- Purpose: ADHD symptom screening in adults
+- Language: French (fr-FR)
+- Structure: Screening and full version available
+
+**12. AQ-12 (Autism Spectrum Quotient - 12 Items)**
+- Purpose: Autism spectrum screening
+- Language: French (fr-FR)
+- Structure: 12-item short version
+
+**13. BIS-10 (Barratt Impulsiveness Scale - 10 Items)**
+- Purpose: Impulsivity assessment
+- Language: French (fr-FR)
+- Structure: Short version assessing impulsive traits
+
+**14. WURS-25 (Wender Utah Rating Scale - 25 Items)**
+- Purpose: Retrospective assessment of childhood ADHD symptoms
+- Language: French (fr-FR)
+- Structure: 25 items assessing childhood behavior
+
+### Trauma and Life Events
+
+**15. CTQ (Childhood Trauma Questionnaire)**
+- Purpose: Childhood trauma and abuse assessment
+- Language: French (fr-FR)
+- Structure: Multiple subscales for different trauma types
+
+**16. CTI (Cognitive Triad Inventory)**
+- Purpose: Negative cognitive patterns assessment
+- Language: French (fr-FR)
+- Structure: Assesses views of self, world, and future
+
+### Specialty and Other Assessments
+
+**17. ALS-Short (Affective Lability Scale - Short Version)**
+- Purpose: Mood instability assessment
+- Language: French (fr-FR)
+- Structure: Short version measuring affective lability
+
+**18. CSM (Chalder Fatigue Scale Modified)**
+- Purpose: Fatigue severity assessment
+- Language: French (fr-FR)
+- Structure: Physical and mental fatigue subscales
+
+**19. PRISE-M (Patient-Reported Inventory of Side Effects - Modified)**
+- Purpose: Medication side effects assessment
+- Language: French (fr-FR)
+- Structure: Gender-specific items assessing treatment side effects
+
+**20. MAThyS (Multidimensional Assessment of Thymic States)**
+- Purpose: Mood state assessment across multiple dimensions
+- Language: French (fr-FR)
+- Structure: Multiple subscales with reverse-scored items
+
+**21. EQ-5D (EuroQol 5 Dimensions - Standard)**
+- Purpose: Health status assessment
+- Language: French (fr-FR)
+- Structure: 5-dimensional health state classification
+
+## Hetero Questionnaires (Clinician-Rated)
+
+Currently in development. This section will contain clinician-administered and clinician-rated instruments.
 
 ## Installation
 
@@ -56,12 +151,35 @@ pip install -r requirements.txt
 QuestionnairesAPI/
 ├── questionnaires/
 │   ├── __init__.py
-│   ├── qids/
+│   ├── auto/                    # Self-report questionnaires
 │   │   ├── __init__.py
-│   │   └── qids_sr16.py
-│   └── mdq/
-│       ├── __init__.py
-│       └── mdq.py
+│   │   ├── qids/                # QIDS-SR16
+│   │   ├── mdq/                 # MDQ
+│   │   ├── asrm/                # ASRM
+│   │   ├── stai_ya/             # STAI-YA
+│   │   ├── aim_short/           # AIM-Short
+│   │   ├── fagerstrom/          # Fagerstrom
+│   │   ├── mars/                # MARS
+│   │   ├── epworth/             # Epworth
+│   │   ├── psqi/                # PSQI
+│   │   ├── eq5del/              # EQ-5D-EL
+│   │   ├── eq5d/                # EQ-5D
+│   │   ├── asrs/                # ASRS
+│   │   ├── aq12/                # AQ-12
+│   │   ├── bis10/               # BIS-10
+│   │   ├── wurs25/              # WURS-25
+│   │   ├── ctq/                 # CTQ
+│   │   ├── cti/                 # CTI
+│   │   ├── als_short/           # ALS-Short
+│   │   ├── csm/                 # CSM
+│   │   ├── prise_m/             # PRISE-M
+│   │   └── mathys/              # MAThyS
+│   └── hetero/                  # Clinician-rated (future)
+│       └── __init__.py
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   └── test_*.py
 ├── requirements.txt
 ├── example_usage.py
 └── README.md
@@ -241,14 +359,16 @@ async def calculate_asrm_score(answers: dict):
 
 ## Features
 
-- ✅ Complete questionnaire structure retrieval for frontend
-- ✅ Answer validation with clinical consistency checks
-- ✅ Score calculation with domain breakdowns
-- ✅ Clinical interpretation generation
-- ✅ Type-safe with Pydantic models
-- ✅ Ready for FastAPI integration
-- ✅ French language support
-- ✅ Clinical alerts (e.g., suicidal ideation)
+- Complete questionnaire structure retrieval for frontend
+- Answer validation with clinical consistency checks
+- Score calculation with domain breakdowns
+- Clinical interpretation generation
+- Type-safe with Pydantic models
+- Ready for FastAPI integration
+- French language support
+- Clinical alerts (e.g., suicidal ideation)
+- Organized structure: auto (self-report) and hetero (clinician-rated) questionnaires
+- 21 auto questionnaires implemented covering depression, anxiety, substance use, sleep, ADHD, trauma, and more
 
 ## Testing
 

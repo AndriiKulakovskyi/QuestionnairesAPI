@@ -112,7 +112,7 @@ Si le sexe n'est pas fourni, le système infère lequel exclure :
 ## Utilisation
 
 ```python
-from questionnaires.prise_m import PRISEM
+from questionnaires.auto.prise_m import PRISEM
 
 # Initialiser le questionnaire
 prisem = PRISEM()

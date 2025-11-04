@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring, and edge cases
 """
 
 import pytest
-from questionnaires.fagerstrom import Fagerstrom, FagerstromError, ScoreResult, ValidationResult
+from questionnaires.auto.fagerstrom import Fagerstrom, FagerstromError, ScoreResult, ValidationResult
 
 
 class TestFagerstromMetadata:

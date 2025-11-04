@@ -3,7 +3,7 @@ Tests for AIM-short (Affect Intensity Measure - Version courte)
 """
 
 import pytest
-from questionnaires.aim_short import AIMShort, AIMShortError
+from questionnaires.auto.aim_short import AIMShort, AIMShortError
 
 
 class TestAIMShortMetadata:

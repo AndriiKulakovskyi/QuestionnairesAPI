@@ -5,7 +5,7 @@ Tests metadata, questions, validation, profile generation, and edge cases
 """
 
 import pytest
-from questionnaires.eq5del import EQ5DEL, EQ5DELError, ScoreResult, ValidationResult
+from questionnaires.auto.eq5del import EQ5DEL, EQ5DELError, ScoreResult, ValidationResult
 
 
 class TestEQ5DELMetadata:

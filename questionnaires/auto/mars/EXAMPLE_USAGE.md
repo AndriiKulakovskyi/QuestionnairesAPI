@@ -13,7 +13,7 @@ pip install pydantic>=2.5.0
 ### 1. Import and Initialize
 
 ```python
-from questionnaires.mars import MARS, MARSError
+from questionnaires.auto.mars import MARS, MARSError
 
 # Create MARS instance
 mars = MARS()
@@ -357,7 +357,7 @@ print("Adherence improved from 5 to 9 over 3 months")
 
 ```python
 from fastapi import APIRouter, HTTPException
-from questionnaires.mars import MARS, MARSError
+from questionnaires.auto.mars import MARS, MARSError
 
 router = APIRouter()
 mars = MARS()

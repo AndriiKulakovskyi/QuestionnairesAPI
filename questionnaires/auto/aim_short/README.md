@@ -90,7 +90,7 @@ Chaque item est évalué sur une échelle de 6 points :
 ### Exemple de base
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 # Initialiser le questionnaire
 aim = AIMShort()

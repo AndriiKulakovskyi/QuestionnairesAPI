@@ -17,7 +17,7 @@ Ce document présente des exemples complets d'utilisation du questionnaire AIM-s
 ### Exemple simple
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 # Initialiser le questionnaire
 aim = AIMShort()
@@ -79,7 +79,7 @@ habituelle, avec une réactivité émotionnelle typique.
 ### Accès aux métadonnées
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 
@@ -115,7 +115,7 @@ for section in sections:
 ### Scénario 1 : Patient avec faible intensité émotionnelle
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 
@@ -149,7 +149,7 @@ if result['mean_score'] < 2.5:
 ### Scénario 2 : Patient avec très haute intensité émotionnelle
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 
@@ -190,7 +190,7 @@ if result['mean_score'] >= 5.0:
 ### Scénario 3 : Dépistage bipolaire en consultation
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 
@@ -270,7 +270,7 @@ else:
 ### Scénario 4 : Évaluation du tempérament affectif
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 
@@ -350,7 +350,7 @@ else:
 ### Validation complète avant calcul
 
 ```python
-from questionnaires.aim_short import AIMShort, AIMShortError
+from questionnaires.auto.aim_short import AIMShort, AIMShortError
 
 aim = AIMShort()
 
@@ -391,7 +391,7 @@ else:
 ### Gestion robuste des erreurs
 
 ```python
-from questionnaires.aim_short import AIMShort, AIMShortError
+from questionnaires.auto.aim_short import AIMShort, AIMShortError
 
 def process_aim_safely(answers_dict, patient_id=None):
     """
@@ -468,7 +468,7 @@ else:
 ### Validation de types de données
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 
@@ -504,7 +504,7 @@ for test_data, description in test_cases:
 ### Protocole de dépistage bipolaire
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 def bipolar_screening_protocol(aim_answers, mdq_positive=None, history=None):
     """
@@ -595,7 +595,7 @@ for i, rec in enumerate(screening['recommendations'], 1):
 ### Suivi longitudinal
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 from datetime import datetime, timedelta
 
 aim = AIMShort()
@@ -693,7 +693,7 @@ else:
 
 ```python
 from flask import Flask, request, jsonify
-from questionnaires.aim_short import AIMShort, AIMShortError
+from questionnaires.auto.aim_short import AIMShort, AIMShortError
 from datetime import datetime
 
 app = Flask(__name__)
@@ -803,7 +803,7 @@ if __name__ == '__main__':
 ### Export pour analyse statistique
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 import pandas as pd
 import numpy as np
 

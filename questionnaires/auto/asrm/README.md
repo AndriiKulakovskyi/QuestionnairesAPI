@@ -39,7 +39,7 @@ Simple sum of all 5 items: Score = Q1 + Q2 + Q3 + Q4 + Q5
 ## Usage Example
 
 ```python
-from questionnaires.asrm import ASRM
+from questionnaires.auto.asrm import ASRM
 
 # Initialize questionnaire
 asrm = ASRM()

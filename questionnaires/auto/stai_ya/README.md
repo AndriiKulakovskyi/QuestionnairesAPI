@@ -73,7 +73,7 @@ Chaque item est évalué sur une échelle de 4 points :
 ### Exemple de base
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 # Initialiser le questionnaire
 stai = STAIYA()

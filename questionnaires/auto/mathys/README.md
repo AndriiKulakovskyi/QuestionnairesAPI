@@ -78,7 +78,7 @@ Le MAThyS est un outil **dimensionnel** qui évalue l'intensité des états thym
 ## Utilisation
 
 ```python
-from questionnaires.mathys import MAThyS
+from questionnaires.auto.mathys import MAThyS
 
 # Initialiser le questionnaire
 mathys = MAThyS()

@@ -17,7 +17,7 @@ Ce document présente des exemples complets d'utilisation du questionnaire STAI-
 ### Exemple simple
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 # Initialiser le questionnaire
 stai = STAIYA()
@@ -74,7 +74,7 @@ Le patient rapporte un niveau d'anxiété dans la norme.
 ### Accès aux métadonnées
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 
@@ -106,7 +106,7 @@ for section in sections:
 ### Scénario 1 : Patient avec anxiété très faible
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 
@@ -130,7 +130,7 @@ print(f"Action: Aucune intervention nécessaire")
 ### Scénario 2 : Patient avec anxiété très élevée
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 
@@ -160,7 +160,7 @@ if result['severity'] == 'very_high':
 ### Scénario 3 : Anxiété pré-opératoire
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 from datetime import datetime
 
 stai = STAIYA()
@@ -202,7 +202,7 @@ else:
 ### Scénario 4 : Évaluation en urgence psychiatrique
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 
@@ -262,7 +262,7 @@ if high_anxiety_items:
 ### Validation avant calcul
 
 ```python
-from questionnaires.stai_ya import STAIYA, STAIYAError
+from questionnaires.auto.stai_ya import STAIYA, STAIYAError
 
 stai = STAIYA()
 
@@ -300,7 +300,7 @@ except STAIYAError as e:
 ### Gestion robuste des erreurs
 
 ```python
-from questionnaires.stai_ya import STAIYA, STAIYAError
+from questionnaires.auto.stai_ya import STAIYA, STAIYAError
 
 def process_stai_safely(answers_dict):
     """Traite un questionnaire STAI-YA avec gestion d'erreurs complète."""
@@ -354,7 +354,7 @@ else:
 ### Validation de types de données
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 
@@ -386,7 +386,7 @@ for i, test_data in enumerate(test_cases, 1):
 ### Suivi longitudinal
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 from datetime import datetime, timedelta
 
 stai = STAIYA()
@@ -472,7 +472,7 @@ else:
 ### Comparaison pré-post intervention
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 
@@ -539,7 +539,7 @@ if significant_changes:
 
 ```python
 from flask import Flask, request, jsonify
-from questionnaires.stai_ya import STAIYA, STAIYAError
+from questionnaires.auto.stai_ya import STAIYA, STAIYAError
 
 app = Flask(__name__)
 stai = STAIYA()
@@ -598,7 +598,7 @@ if __name__ == '__main__':
 ### Sauvegarde en base de données
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 from datetime import datetime
 import json
 
@@ -691,7 +691,7 @@ class STAIYARepository:
 ### Export pour analyse statistique
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 import pandas as pd
 import json
 

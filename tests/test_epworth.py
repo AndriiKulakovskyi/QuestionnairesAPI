@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring logic, and edge cases
 """
 
 import pytest
-from questionnaires.epworth import Epworth, EpworthError, ScoreResult, ValidationResult
+from questionnaires.auto.epworth import Epworth, EpworthError, ScoreResult, ValidationResult
 
 
 class TestEpworthMetadata:

@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring logic with subscales and reverse 
 """
 
 import pytest
-from questionnaires.mathys import MAThyS, MAThySError, ScoreResult, ValidationResult
+from questionnaires.auto.mathys import MAThyS, MAThySError, ScoreResult, ValidationResult
 
 
 class TestMAThySMetadata:

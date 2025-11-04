@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring logic, and edge cases
 """
 
 import pytest
-from questionnaires.qids import QIDSSR16, QIDSError, ScoreResult, ValidationResult
+from questionnaires.auto.qids import QIDSSR16, QIDSError, ScoreResult, ValidationResult
 
 
 class TestQIDSSR16Metadata:

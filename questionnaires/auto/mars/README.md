@@ -48,7 +48,7 @@ Le score total est la somme des 10 items recodés (0–10).
 ## Utilisation
 
 ```python
-from questionnaires.mars import MARS
+from questionnaires.auto.mars import MARS
 
 # Initialiser le questionnaire
 mars = MARS()

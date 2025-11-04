@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring logic with reverse coding, and ed
 """
 
 import pytest
-from questionnaires.mars import MARS, MARSError, ScoreResult, ValidationResult
+from questionnaires.auto.mars import MARS, MARSError, ScoreResult, ValidationResult
 
 
 class TestMARSMetadata:

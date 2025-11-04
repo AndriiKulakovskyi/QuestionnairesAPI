@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring logic with gender-specific items
 """
 
 import pytest
-from questionnaires.prise_m import PRISEM, PRISEMError, ScoreResult, ValidationResult
+from questionnaires.auto.prise_m import PRISEM, PRISEMError, ScoreResult, ValidationResult
 
 
 class TestPRISEMMetadata:

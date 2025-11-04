@@ -4,7 +4,7 @@ State-Trait Anxiety Inventory - Form Y-A
 """
 
 import pytest
-from questionnaires.stai_ya import STAIYA, STAIYAError
+from questionnaires.auto.stai_ya import STAIYA, STAIYAError
 
 
 class TestSTAIYAMetadata:

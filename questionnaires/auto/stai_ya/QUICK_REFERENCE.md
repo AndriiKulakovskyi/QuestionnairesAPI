@@ -11,7 +11,7 @@
 ## Utilisation rapide
 
 ```python
-from questionnaires.stai_ya import STAIYA
+from questionnaires.auto.stai_ya import STAIYA
 
 stai = STAIYA()
 answers = {f"q{i}": 2 for i in range(1, 21)}

@@ -5,7 +5,7 @@ Tests metadata, questions, validation, scoring logic, and edge cases
 """
 
 import pytest
-from questionnaires.asrm import ASRM, ASRMError, ScoreResult, ValidationResult
+from questionnaires.auto.asrm import ASRM, ASRMError, ScoreResult, ValidationResult
 
 
 class TestASRMMetadata:

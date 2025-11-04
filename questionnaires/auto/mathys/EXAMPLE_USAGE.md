@@ -5,7 +5,7 @@
 ### 1. Import and Initialize
 
 ```python
-from questionnaires.mathys import MAThyS, MAThySError
+from questionnaires.auto.mathys import MAThyS, MAThySError
 
 # Create MAThyS instance
 mathys = MAThyS()
@@ -330,7 +330,7 @@ plot_mathys_profile(result)
 
 ```python
 from fastapi import APIRouter, HTTPException
-from questionnaires.mathys import MAThyS, MAThySError
+from questionnaires.auto.mathys import MAThyS, MAThySError
 
 router = APIRouter()
 mathys = MAThyS()

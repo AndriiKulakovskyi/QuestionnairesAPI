@@ -11,7 +11,7 @@
 ## Utilisation rapide
 
 ```python
-from questionnaires.aim_short import AIMShort
+from questionnaires.auto.aim_short import AIMShort
 
 aim = AIMShort()
 answers = {f"q{i}": 3 for i in range(1, 21)}

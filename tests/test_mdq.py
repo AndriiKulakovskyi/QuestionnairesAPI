@@ -5,7 +5,7 @@ Tests metadata, questions, validation, screening logic, and edge cases
 """
 
 import pytest
-from questionnaires.mdq import MDQ, MDQError, ScreeningResult, ValidationResult
+from questionnaires.auto.mdq import MDQ, MDQError, ScreeningResult, ValidationResult
 
 
 class TestMDQMetadata:
