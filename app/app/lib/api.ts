@@ -8,7 +8,11 @@ import {
   AnswersRequest,
 } from '../types/questionnaire';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+// In production (server-side), use localhost:8000
+// In browser (client-side), requests go through Next.js rewrites
+const API_BASE_URL = typeof window === 'undefined' 
+  ? 'http://localhost:8000'  // Server-side: direct connection
+  : '';  // Client-side: use relative URLs (handled by Next.js rewrites)
 
 class APIError extends Error {
   constructor(
