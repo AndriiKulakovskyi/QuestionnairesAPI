@@ -1,16 +1,30 @@
+'use client';
+
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { getQuestionnaireList } from '../lib/api';
 import QuestionnaireCard from '../components/QuestionnaireCard';
+import type { QuestionnaireListItem } from '../types/questionnaire';
 
-export default async function AutoQuestionnairesPage() {
-  let questionnaires;
-  let error;
+export default function AutoQuestionnairesPage() {
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireListItem[]>([]);
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
-  try {
-    questionnaires = await getQuestionnaireList('auto');
-  } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load questionnaires';
-  }
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getQuestionnaireList('auto');
+        setQuestionnaires(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load questionnaires');
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -89,7 +103,7 @@ export default async function AutoQuestionnairesPage() {
               ))}
             </div>
           </>
-        ) : !error && (
+        ) : loading && !error && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-400"></div>
             <p className="mt-4 text-gray-400">Loading questionnaires...</p>
