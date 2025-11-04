@@ -87,7 +87,7 @@ ipython_config.py
 Pipfile.lock
 
 # poetry
-poetry.lock
+# poetry.lock - commented out to allow lock file in repo for deployment
 
 # pdm
 .pdm.toml
