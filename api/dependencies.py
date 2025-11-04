@@ -59,8 +59,11 @@ class QuestionnaireRegistry:
             "WURS25.fr": WURS25()
         }
         
-        # Hetero questionnaires (clinician-rated) - empty for now
-        self.hetero_questionnaires: Dict[str, Any] = {}
+        # Hetero questionnaires (clinician-rated)
+        from questionnaires import ALDA
+        self.hetero_questionnaires: Dict[str, Any] = {
+            "Alda.fr": ALDA()
+        }
     
     def get_questionnaire(self, category: str, questionnaire_id: str) -> Optional[Any]:
         """

@@ -714,6 +714,19 @@ class ALDA:
         
         return interpretation
     
+    def get_full_questionnaire(self) -> Dict[str, Any]:
+        """
+        Get complete questionnaire structure for frontend rendering.
+        
+        Returns:
+            Dictionary with metadata, sections, and questions
+        """
+        return {
+            "metadata": self.get_metadata(),
+            "sections": self.get_sections(),
+            "questions": self.get_questions()
+        }
+    
     def get_schema(self) -> Dict[str, Any]:
         """
         Get complete scale schema in JSON format.
