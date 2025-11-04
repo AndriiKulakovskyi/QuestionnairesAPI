@@ -248,44 +248,37 @@ class PRISEM:
         """
         return {
             "schema_version": "1.0",
-            "description": "Demographic information required for PRISE-M administration",
+            "description": "Informations démographiques requises pour PRISE-M",
             "fields": [
                 {
                     "id": "gender",
-                    "label": "Sexe",
-                    "label_en": "Gender",
-                    "type": "single_choice",
+                    "label": "Sexe du patient",
+                    "label_en": "Patient Gender",
+                    "type": "toggle",
                     "required": True,
-                    "purpose": "Determines which gender-specific question to display (q20 for F, q25 for M)",
+                    "purpose": "Détermine quelle question spécifique au sexe afficher (q20 pour Femme, q25 pour Homme)",
                     "options": [
                         {
                             "code": "F",
                             "label": "Femme",
                             "label_en": "Female",
-                            "triggers": "Shows q20 (irregular periods), hides q25 (erectile dysfunction)"
+                            "triggers": "Affiche q20 (règles irrégulières), masque q25 (troubles érection)"
                         },
                         {
                             "code": "M",
                             "label": "Homme",
                             "label_en": "Male",
-                            "triggers": "Shows q25 (erectile dysfunction), hides q20 (irregular periods)"
-                        },
-                        {
-                            "code": "X",
-                            "label": "Autre / Préfère ne pas dire",
-                            "label_en": "Other / Prefer not to say",
-                            "triggers": "Hides both q20 and q25, scoring uses 30 items"
+                            "triggers": "Affiche q25 (troubles érection), masque q20 (règles irrégulières)"
                         }
                     ],
                     "validation": {
-                        "required_message": "Gender is required to determine which questions to display"
+                        "required_message": "Le sexe est requis pour afficher les bonnes questions"
                     }
                 }
             ],
             "notes": [
-                "Gender must be collected before displaying questionnaire items",
-                "Gender determines visibility of q20 (female-specific) and q25 (male-specific)",
-                "For non-binary/other gender, both items are hidden and scoring adjusts accordingly"
+                "Le sexe doit être sélectionné pour afficher les questions appropriées",
+                "Le sexe détermine la visibilité de q20 (femme) et q25 (homme)"
             ]
         }
     
@@ -296,7 +289,7 @@ class PRISEM:
     def get_questions(
         self, 
         section_id: Optional[str] = None,
-        gender: Optional[Literal["F", "M", "X"]] = None
+        gender: Optional[Literal["F", "M"]] = None
     ) -> List[Dict[str, Any]]:
         """
         Get questions, optionally filtered by section and/or gender
@@ -306,7 +299,6 @@ class PRISEM:
             gender: Optional gender to filter gender-specific questions
                     "F" = Female (shows q20, hides q25)
                     "M" = Male (shows q25, hides q20)
-                    "X" = Other/Non-binary (hides both q20 and q25)
             
         Returns:
             List of questions as dictionaries
@@ -323,9 +315,6 @@ class PRISEM:
                 questions = [q for q in questions if q.id != self.ITEM_MALE]
             elif gender_upper == "M":
                 questions = [q for q in questions if q.id != self.ITEM_FEMALE]
-            elif gender_upper == "X":
-                # For non-binary/other, exclude both gender-specific items
-                questions = [q for q in questions if q.id not in [self.ITEM_FEMALE, self.ITEM_MALE]]
         
         return [q.model_dump() for q in questions]
     
@@ -339,14 +328,14 @@ class PRISEM:
     def validate_answers(
         self, 
         answers: Dict[str, int],
-        gender: Optional[Literal["F", "M", "X"]] = None
+        gender: Optional[Literal["F", "M"]] = None
     ) -> ValidationResult:
         """
         Validate provided answers
         
         Args:
             answers: Dictionary of question_id -> answer mappings (0-2)
-            gender: Optional gender ("F", "M", or "X")
+            gender: Required gender ("F" or "M")
             
         Returns:
             ValidationResult with validation status and messages
@@ -354,19 +343,23 @@ class PRISEM:
         errors = []
         warnings = []
         
+        # Gender is required for PRISE-M
+        if not gender:
+            errors.append("Le sexe est requis pour valider les réponses PRISE-M")
+            return ValidationResult(valid=False, errors=errors, warnings=warnings)
+        
         # Determine which questions are expected based on gender
         expected_keys = [f"q{i}" for i in range(1, 33)]
-        if gender:
-            gender_upper = gender.upper()
-            if gender_upper == "F":
-                # Female: exclude q25
-                expected_keys = [k for k in expected_keys if k != self.ITEM_MALE]
-            elif gender_upper == "M":
-                # Male: exclude q20
-                expected_keys = [k for k in expected_keys if k != self.ITEM_FEMALE]
-            elif gender_upper == "X":
-                # Non-binary/Other: exclude both q20 and q25
-                expected_keys = [k for k in expected_keys if k not in [self.ITEM_FEMALE, self.ITEM_MALE]]
+        gender_upper = gender.upper()
+        if gender_upper == "F":
+            # Female: exclude q25
+            expected_keys = [k for k in expected_keys if k != self.ITEM_MALE]
+        elif gender_upper == "M":
+            # Male: exclude q20
+            expected_keys = [k for k in expected_keys if k != self.ITEM_FEMALE]
+        else:
+            errors.append(f"Sexe invalide: '{gender}'. Doit être 'F' (Femme) ou 'M' (Homme)")
+            return ValidationResult(valid=False, errors=errors, warnings=warnings)
         
         # Check for missing required questions
         missing = [k for k in expected_keys if k not in answers]
@@ -418,70 +411,50 @@ class PRISEM:
     def _determine_excluded_items(
         self, 
         answers: Dict[str, int],
-        gender: Optional[Literal["F", "M", "X"]]
+        gender: Literal["F", "M"]
     ) -> tuple[List[str], Optional[str]]:
         """
         Determine which gender-specific items to exclude from scoring
         
+        Args:
+            gender: Required gender ("F" or "M")
+        
         Returns:
             (excluded_item_ids, warning_message)
         """
-        # If gender is explicitly provided, use it
-        if gender:
-            gender_upper = gender.upper()
-            if gender_upper == "F":
-                return [self.ITEM_MALE], None
-            elif gender_upper == "M":
-                return [self.ITEM_FEMALE], None
-            elif gender_upper == "X":
-                # Non-binary/Other: exclude both items
-                return [self.ITEM_FEMALE, self.ITEM_MALE], (
-                    f"Sexe non-binaire/autre: exclusion de {self.ITEM_FEMALE} et {self.ITEM_MALE}. "
-                    "Score basé sur 30 items."
-                )
-        
-        # If gender not provided, infer from responses
-        val_female = answers.get(self.ITEM_FEMALE, 0)
-        val_male = answers.get(self.ITEM_MALE, 0)
-        
-        # If only female item is endorsed, assume female
-        if val_female != 0 and val_male == 0:
-            return [self.ITEM_MALE], (
-                f"Sexe non fourni: exclusion de {self.ITEM_MALE} (homme) "
-                f"car {self.ITEM_FEMALE} (femme) est renseigné."
-            )
-        
-        # If only male item is endorsed, assume male
-        if val_male != 0 and val_female == 0:
-            return [self.ITEM_FEMALE], (
-                f"Sexe non fourni: exclusion de {self.ITEM_FEMALE} (femme) "
-                f"car {self.ITEM_MALE} (homme) est renseigné."
-            )
-        
-        # Default: exclude male item
-        return [self.ITEM_MALE], f"Sexe non fourni: exclusion par défaut de {self.ITEM_MALE}."
+        gender_upper = gender.upper()
+        if gender_upper == "F":
+            return [self.ITEM_MALE], None
+        elif gender_upper == "M":
+            return [self.ITEM_FEMALE], None
+        else:
+            # Should never reach here due to validation
+            return [self.ITEM_MALE], f"Sexe invalide: '{gender}'. Exclusion par défaut de {self.ITEM_MALE}."
     
     def calculate_score(
         self, 
         answers: Dict[str, int],
-        gender: Optional[Literal["F", "M", "X"]] = None
+        gender: Literal["F", "M"]
     ) -> ScoreResult:
         """
         Calculate PRISE-M total score
         
         Args:
             answers: Dictionary with keys 'q1' through 'q32', values 0-2
-            gender: Optional gender ("F", "M", or "X") for determining which items to exclude
+            gender: Required gender ("F" or "M") for determining which items to exclude
                     "F" = Female: score 31 items (exclude q25), range 0-62
                     "M" = Male: score 31 items (exclude q20), range 0-62
-                    "X" = Other/Non-binary: score 30 items (exclude both q20 and q25), range 0-60
             
         Returns:
             ScoreResult with total score, excluded items, and interpretation
             
         Raises:
-            PRISEMError: If validation fails
+            PRISEMError: If validation fails or gender not provided
         """
+        # Gender is mandatory
+        if not gender:
+            raise PRISEMError("Le sexe est requis pour calculer le score PRISE-M")
+        
         # Validate answers
         validation = self.validate_answers(answers, gender)
         if not validation.valid:
@@ -516,8 +489,6 @@ class PRISEM:
             gender_used = "F"
         elif self.ITEM_FEMALE in excluded_items and self.ITEM_MALE not in excluded_items:
             gender_used = "M"
-        elif self.ITEM_MALE in excluded_items and self.ITEM_FEMALE in excluded_items:
-            gender_used = "X"
         
         # Build interpretation
         interpretation = self._build_interpretation(
@@ -566,7 +537,6 @@ class PRISEM:
         gender_label = (
             "FEMME" if gender_used == "F" else 
             "HOMME" if gender_used == "M" else 
-            "NON-BINAIRE/AUTRE" if gender_used == "X" else 
             "NON SPÉCIFIÉ"
         )
         max_score = items_scored * 2
@@ -673,20 +643,14 @@ class PRISEM:
                 "gender": {
                     "source": "respondent.gender",
                     "type": "string",
-                    "allowed_values": ["F", "M", "X"],
-                    "description": "Gender from respondent demographics"
+                    "allowed_values": ["F", "M"],
+                    "description": "Gender from respondent demographics (F=Female, M=Male)"
                 }
             },
             "fallback_behavior": {
-                "when_gender_is_X": {
-                    "q20": "hide",
-                    "q25": "hide",
-                    "scoring_adjustment": "use_30_items",
-                    "description": "For non-binary/other gender, hide both items"
-                },
                 "when_gender_missing": {
-                    "action": "block_questionnaire",
-                    "message": "Gender is required to determine which questions to display"
+                    "action": "require_selection",
+                    "message": "Le sexe du patient est requis pour afficher les questions appropriées"
                 }
             },
             "scoring_logic": {
@@ -706,13 +670,6 @@ class PRISEM:
                         "exclude": ["q20"],
                         "expected_item_count": 31,
                         "score_range": [0, 62]
-                    },
-                    {
-                        "condition": {"==": [{"var": "gender"}, "X"]},
-                        "include": [],
-                        "exclude": ["q20", "q25"],
-                        "expected_item_count": 30,
-                        "score_range": [0, 60]
                     }
                 ],
                 "on_missing_response": "block_submit",
@@ -722,14 +679,14 @@ class PRISEM:
     
     def get_full_questionnaire(
         self,
-        gender: Optional[Literal["F", "M", "X"]] = None,
+        gender: Optional[Literal["F", "M"]] = None,
         include_logic: bool = True
     ) -> Dict[str, Any]:
         """
         Get complete questionnaire structure for frontend
         
         Args:
-            gender: Optional gender to filter gender-specific questions ("F", "M", or "X")
+            gender: Optional gender to filter gender-specific questions ("F" or "M")
             include_logic: Whether to include branching logic and respondent schema
         """
         result = {

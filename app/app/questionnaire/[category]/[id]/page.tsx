@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getQuestionnaire, submitAnswers } from '../../../lib/api';
-import { QuestionnaireDetail, ScoreResponse } from '../../../types/questionnaire';
+import { QuestionnaireDetail, ScoreResponse, Question as QuestionType } from '../../../types/questionnaire';
 import Question from '../../../components/Question';
 import Results from '../../../components/Results';
+import { shouldDisplayQuestion, isQuestionRequired } from '../../../lib/jsonlogic';
 
 export default function QuestionnairePage() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function QuestionnairePage() {
 
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireDetail | null>(null);
   const [answers, setAnswers] = useState<Record<string, number | string>>({});
+  const [demographics, setDemographics] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -49,6 +51,15 @@ export default function QuestionnairePage() {
     loadQuestionnaire();
   }, [questionnaireId, category]);
 
+  const handleDemographicChange = (fieldId: string, value: string) => {
+    setDemographics((prev) => ({
+      ...prev,
+      [fieldId]: value,
+    }));
+    // Clear validation errors when demographic changes
+    setValidationErrors([]);
+  };
+
   const handleAnswerChange = (questionId: string, value: number | string) => {
     setAnswers((prev) => ({
       ...prev,
@@ -63,13 +74,34 @@ export default function QuestionnairePage() {
     
     if (!questionnaire) return;
 
-    // Check if all required questions are answered
-    const requiredQuestions = questionnaire.questions.filter((q) => q.required);
+    // Check if demographics are required
+    if (questionnaire.respondent && questionnaire.respondent.fields.length > 0) {
+      const requiredDemoFields = questionnaire.respondent.fields.filter(f => f.required);
+      const missingDemo = requiredDemoFields.filter(f => !demographics[f.id]);
+      
+      if (missingDemo.length > 0) {
+        setValidationErrors([
+          `Informations requises: ${missingDemo.map(f => f.label).join(', ')}`
+        ]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+
+    // Filter visible questions based on demographics (if applicable)
+    const visibleQuestions = questionnaire.questions.filter((q) =>
+      shouldDisplayQuestion(q, demographics)
+    );
+
+    // Check if all required visible questions are answered
+    const requiredQuestions = visibleQuestions.filter((q) =>
+      isQuestionRequired(q, demographics)
+    );
     const missingAnswers = requiredQuestions.filter((q) => !(q.id in answers));
     
     if (missingAnswers.length > 0) {
       setValidationErrors([
-        `Please answer all required questions. Missing: ${missingAnswers.map(q => q.id).join(', ')}`
+        `Veuillez répondre à toutes les questions requises. Manquantes: ${missingAnswers.map(q => q.id).join(', ')}`
       ]);
       // Scroll to top to show error
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -79,7 +111,13 @@ export default function QuestionnairePage() {
     try {
       setSubmitting(true);
       setValidationErrors([]);
-      const response = await submitAnswers(category, questionnaireId, answers);
+      // Submit with demographics if applicable
+      const response = await submitAnswers(
+        category,
+        questionnaireId,
+        answers,
+        Object.keys(demographics).length > 0 ? demographics : undefined
+      );
       setResult(response);
       // Scroll to top to show results
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -154,9 +192,17 @@ export default function QuestionnairePage() {
     );
   }
 
+  // Filter visible questions based on demographics
+  const visibleQuestions = questionnaire.questions.filter((q) =>
+    shouldDisplayQuestion(q, demographics)
+  );
+
   // Show questionnaire form
   const answeredCount = Object.keys(answers).length;
-  const totalRequired = questionnaire.questions.filter(q => q.required).length;
+  const visibleRequiredQuestions = visibleQuestions.filter((q) =>
+    isQuestionRequired(q, demographics)
+  );
+  const totalRequired = visibleRequiredQuestions.length;
   const progress = totalRequired > 0 ? (answeredCount / totalRequired) * 100 : 0;
 
   return (
@@ -234,11 +280,58 @@ export default function QuestionnairePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
+          {/* Demographics Toggle (if required) */}
+          {questionnaire.respondent && questionnaire.respondent.fields && questionnaire.respondent.fields.length > 0 && (
+            <div className="mb-8 p-6 bg-gray-800 border-2 border-blue-500 rounded-lg">
+              {questionnaire.respondent.fields.map((field) => (
+                <div key={field.id}>
+                  <label className="block mb-4">
+                    <div className="text-lg font-semibold text-gray-100 mb-2">
+                      {field.label}
+                      {field.required && <span className="text-red-400 ml-1">*</span>}
+                    </div>
+                    {field.purpose && (
+                      <p className="text-sm text-gray-400 mb-4">{field.purpose}</p>
+                    )}
+                  </label>
+
+                  {field.type === 'toggle' && field.options && field.options.length > 0 && (
+                    <div className="flex gap-3">
+                      {field.options.map((option) => (
+                        <button
+                          key={option.code}
+                          type="button"
+                          onClick={() => handleDemographicChange(field.id, option.code)}
+                          className={`flex-1 px-6 py-4 rounded-lg border-2 font-medium transition-all ${
+                            demographics[field.id] === option.code
+                              ? 'border-blue-500 bg-blue-600 text-white shadow-lg'
+                              : 'border-gray-600 bg-gray-750 text-gray-300 hover:border-gray-500 hover:bg-gray-700'
+                          }`}
+                        >
+                          <div className="text-lg font-bold mb-1">{option.label}</div>
+                          {option.triggers && (
+                            <div className="text-xs opacity-80">{option.triggers}</div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Sections and Questions */}
           {questionnaire.sections.map((section) => {
-            const sectionQuestions = questionnaire.questions.filter(
+            // Filter section questions by visibility
+            const sectionQuestions = visibleQuestions.filter(
               (q) => q.section_id === section.id
             );
+
+            // Skip empty sections
+            if (sectionQuestions.length === 0) {
+              return null;
+            }
 
             return (
               <div key={section.id} className="mb-10">

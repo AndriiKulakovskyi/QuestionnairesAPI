@@ -45,6 +45,9 @@ export interface Question {
     [key: string]: any;
   };
   help?: string;
+  gender_specific?: string;  // "F" or "M" for gender-specific questions
+  display_if?: any;  // JSONLogic condition for visibility
+  required_if?: any;  // JSONLogic condition for requirement
   [key: string]: any;
 }
 
@@ -56,14 +59,51 @@ export interface Section {
   [key: string]: any;
 }
 
+export interface RespondentField {
+  id: string;
+  label: string;
+  label_en?: string;
+  type: string;
+  required: boolean;
+  purpose?: string;
+  options?: {
+    code: string;
+    label: string;
+    label_en?: string;
+    triggers?: string;
+  }[];
+  validation?: {
+    required_message?: string;
+  };
+}
+
+export interface RespondentSchema {
+  schema_version: string;
+  description: string;
+  fields: RespondentField[];
+  notes?: string[];
+}
+
+export interface BranchingLogic {
+  schema_version: string;
+  type: string;
+  rules: any[];
+  context_variables?: any;
+  fallback_behavior?: any;
+  scoring_logic?: any;
+}
+
 export interface QuestionnaireDetail {
   metadata: QuestionnaireMetadata;
   sections: Section[];
   questions: Question[];
+  respondent?: RespondentSchema;  // Optional demographics requirements
+  logic?: BranchingLogic;  // Optional branching logic
 }
 
 export interface AnswersRequest {
   answers: Record<string, number | string>;
+  demographics?: Record<string, string>;  // Optional demographics for branching logic
 }
 
 export interface ValidationResponse {

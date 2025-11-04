@@ -2,7 +2,7 @@
 API routes for auto (self-report) questionnaires
 """
 
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends, status
 from ..dependencies import QuestionnaireRegistry, get_registry
 from ..schemas import (
@@ -78,10 +78,11 @@ def get_auto_questionnaire_metadata(
         404: {"model": ErrorResponse, "description": "Questionnaire not found"}
     },
     summary="Get complete questionnaire",
-    description="Returns the complete questionnaire structure including metadata, sections, and all questions with options and constraints."
+    description="Returns the complete questionnaire structure including metadata, sections, and all questions with options and constraints. For questionnaires with branching logic, optional gender parameter filters questions."
 )
 def get_auto_questionnaire(
     questionnaire_id: str,
+    gender: Optional[str] = None,
     registry: QuestionnaireRegistry = Depends(get_registry)
 ):
     """Get complete questionnaire structure for a specific auto questionnaire."""
@@ -94,7 +95,22 @@ def get_auto_questionnaire(
         )
     
     # Get full questionnaire structure
-    full_structure = questionnaire.get_full_questionnaire()
+    # For questionnaires with branching logic (like PRISE-M), pass gender parameter
+    if hasattr(questionnaire, 'get_full_questionnaire'):
+        # Try to pass gender parameter if the method accepts it
+        import inspect
+        sig = inspect.signature(questionnaire.get_full_questionnaire)
+        if 'gender' in sig.parameters:
+            full_structure = questionnaire.get_full_questionnaire(gender=gender)
+        else:
+            full_structure = questionnaire.get_full_questionnaire()
+    else:
+        # Fallback for questionnaires without this method
+        full_structure = {
+            "metadata": questionnaire.get_metadata(),
+            "sections": questionnaire.get_sections(),
+            "questions": questionnaire.get_questions()
+        }
     
     return QuestionnaireDetail(**full_structure)
 
@@ -141,7 +157,7 @@ def validate_auto_questionnaire_answers(
         400: {"model": ErrorResponse, "description": "Invalid answers"}
     },
     summary="Submit answers and calculate score",
-    description="Validates and calculates scores/results for submitted answers. The structure of score_data varies by questionnaire type."
+    description="Validates and calculates scores/results for submitted answers. The structure of score_data varies by questionnaire type. For questionnaires with branching logic, demographics (e.g., gender) should be included."
 )
 def submit_auto_questionnaire_answers(
     questionnaire_id: str,
@@ -158,9 +174,19 @@ def submit_auto_questionnaire_answers(
         )
     
     try:
+        # Extract demographics if provided
+        demographics = answers_request.demographics or {}
+        gender = demographics.get('gender')
+        
         # Some questionnaires use calculate_score(), others use calculate_screening()
         if hasattr(questionnaire, 'calculate_score'):
-            result = questionnaire.calculate_score(answers_request.answers)
+            # Check if calculate_score accepts gender parameter (for branching logic)
+            import inspect
+            sig = inspect.signature(questionnaire.calculate_score)
+            if 'gender' in sig.parameters and gender:
+                result = questionnaire.calculate_score(answers_request.answers, gender=gender)
+            else:
+                result = questionnaire.calculate_score(answers_request.answers)
         elif hasattr(questionnaire, 'calculate_screening'):
             result = questionnaire.calculate_screening(answers_request.answers)
         else:

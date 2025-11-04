@@ -135,13 +135,19 @@ export async function validateAnswers(
 export async function submitAnswers(
   category: 'auto' | 'hetero',
   id: string,
-  answers: Record<string, number | string>
+  answers: Record<string, number | string>,
+  demographics?: Record<string, string>
 ): Promise<ScoreResponse> {
+  const body: any = { answers };
+  if (demographics) {
+    body.demographics = demographics;
+  }
+  
   return fetchAPI<ScoreResponse>(
     `/api/${category}/questionnaires/${encodeURIComponent(id)}/submit`,
     {
       method: 'POST',
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify(body),
     }
   );
 }

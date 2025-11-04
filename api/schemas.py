@@ -74,6 +74,14 @@ class QuestionnaireDetail(BaseModel):
     metadata: Dict[str, Any]
     sections: List[Dict[str, Any]]
     questions: List[Dict[str, Any]]
+    respondent: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional demographic requirements schema for branching logic questionnaires"
+    )
+    logic: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional branching logic rules for conditional question display"
+    )
 
 
 class AnswersRequest(BaseModel):
@@ -81,6 +89,10 @@ class AnswersRequest(BaseModel):
     answers: Dict[str, Union[int, str, float]] = Field(
         ..., 
         description="Dictionary mapping question IDs to answer values"
+    )
+    demographics: Optional[Dict[str, str]] = Field(
+        None,
+        description="Optional demographic information (e.g., gender) for branching logic questionnaires"
     )
     
     class Config:
@@ -90,6 +102,9 @@ class AnswersRequest(BaseModel):
                     "q1": 0,
                     "q2": 1,
                     "q3": 2
+                },
+                "demographics": {
+                    "gender": "F"
                 }
             }
         }
