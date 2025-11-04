@@ -30,8 +30,9 @@ COPY app/ .
 # Build Next.js application
 RUN npm run build
 
-# Remove devDependencies to reduce image size
-RUN npm prune --production
+# Remove devDependencies to reduce image size, but keep TypeScript
+# TypeScript is needed at runtime to load next.config.ts
+RUN npm prune --production && npm install typescript
 
 # Switch to app root directory
 WORKDIR /app
