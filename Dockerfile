@@ -46,7 +46,8 @@ COPY run_api.py ./
 RUN poetry config virtualenvs.create false
 
 # Install Python dependencies (only main/production dependencies)
-RUN poetry install --only=main --no-interaction --no-ansi
+# Use --no-root to skip installing the project package itself
+RUN poetry install --only=main --no-interaction --no-ansi --no-root
 
 # Copy supervisord configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
