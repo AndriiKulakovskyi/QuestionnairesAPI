@@ -149,6 +149,15 @@ pip install -r requirements.txt
 
 ```
 QuestionnairesAPI/
+├── api/                         # FastAPI backend
+│   ├── __init__.py
+│   ├── main.py                  # FastAPI app initialization
+│   ├── dependencies.py          # Questionnaire registry
+│   ├── schemas.py               # Pydantic models
+│   └── routes/
+│       ├── __init__.py
+│       ├── auto.py              # Auto questionnaire endpoints
+│       └── hetero.py            # Hetero questionnaire endpoints
 ├── questionnaires/
 │   ├── __init__.py
 │   ├── auto/                    # Self-report questionnaires
@@ -182,10 +191,140 @@ QuestionnairesAPI/
 │   └── test_*.py
 ├── requirements.txt
 ├── example_usage.py
+├── run_api.py                   # API startup script
 └── README.md
 ```
 
-## Usage
+## API Usage
+
+### Starting the API Server
+
+Start the FastAPI server:
+
+```bash
+python run_api.py
+```
+
+The API will be available at `http://localhost:8000`
+- Interactive documentation: `http://localhost:8000/docs`
+- Alternative documentation: `http://localhost:8000/redoc`
+- OpenAPI schema: `http://localhost:8000/openapi.json`
+
+### API Endpoints
+
+#### Root Endpoints
+
+**GET /** - API information
+```bash
+curl http://localhost:8000/
+```
+
+**GET /health** - Health check
+```bash
+curl http://localhost:8000/health
+```
+
+#### Auto Questionnaires (Self-Report)
+
+**GET /api/auto/questionnaires** - List all auto questionnaires
+```bash
+curl http://localhost:8000/api/auto/questionnaires
+```
+
+**GET /api/auto/questionnaires/{questionnaire_id}/metadata** - Get metadata only
+```bash
+curl http://localhost:8000/api/auto/questionnaires/QIDS-SR16.fr/metadata
+```
+
+**GET /api/auto/questionnaires/{questionnaire_id}** - Get complete questionnaire
+```bash
+curl http://localhost:8000/api/auto/questionnaires/QIDS-SR16.fr
+```
+
+**POST /api/auto/questionnaires/{questionnaire_id}/validate** - Validate answers
+```bash
+curl -X POST http://localhost:8000/api/auto/questionnaires/QIDS-SR16.fr/validate \
+  -H "Content-Type: application/json" \
+  -d '{"answers": {"q1": 0, "q2": 1, "q3": 2}}'
+```
+
+**POST /api/auto/questionnaires/{questionnaire_id}/submit** - Submit and calculate scores
+```bash
+curl -X POST http://localhost:8000/api/auto/questionnaires/QIDS-SR16.fr/submit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "answers": {
+      "q1": 0, "q2": 0, "q3": 0, "q4": 0,
+      "q5": 0, "q6": 0, "q7": 0, "q8": 0,
+      "q9": 0, "q10": 0, "q11": 0, "q12": 0,
+      "q13": 0, "q14": 0, "q15": 0, "q16": 0
+    }
+  }'
+```
+
+#### Example Response: Submit QIDS-SR16
+
+```json
+{
+  "questionnaire_id": "QIDS-SR16.fr",
+  "score_data": {
+    "total_score": 12,
+    "severity": "Dépression modérée",
+    "domain_scores": {
+      "sleep": 2,
+      "sadness": 2,
+      "appetite_weight": 1,
+      "concentration": 2,
+      "self_view": 1,
+      "suicidal_ideation": 0,
+      "interest": 2,
+      "energy": 2,
+      "psychomotor": 0
+    },
+    "interpretation": "Score total: 12/27 - Dépression modérée.",
+    "range": [0, 27]
+  }
+}
+```
+
+#### Hetero Questionnaires (Clinician-Rated)
+
+Same endpoint structure as auto, but returns 501 Not Implemented (coming soon):
+- GET /api/hetero/questionnaires
+- GET /api/hetero/questionnaires/{questionnaire_id}/metadata
+- GET /api/hetero/questionnaires/{questionnaire_id}
+- POST /api/hetero/questionnaires/{questionnaire_id}/validate
+- POST /api/hetero/questionnaires/{questionnaire_id}/submit
+
+### Python Client Example
+
+```python
+import requests
+
+BASE_URL = "http://localhost:8000"
+
+# List all auto questionnaires
+response = requests.get(f"{BASE_URL}/api/auto/questionnaires")
+questionnaires = response.json()
+print(f"Found {len(questionnaires)} questionnaires")
+
+# Get specific questionnaire
+response = requests.get(f"{BASE_URL}/api/auto/questionnaires/QIDS-SR16.fr")
+questionnaire = response.json()
+print(f"Questions: {len(questionnaire['questions'])}")
+
+# Submit answers
+answers = {f"q{i}": 0 for i in range(1, 17)}
+response = requests.post(
+    f"{BASE_URL}/api/auto/questionnaires/QIDS-SR16.fr/submit",
+    json={"answers": answers}
+)
+result = response.json()
+print(f"Score: {result['score_data']['total_score']}")
+print(f"Severity: {result['score_data']['severity']}")
+```
+
+## Direct Python Usage (Without API)
 
 ### Basic Usage
 
