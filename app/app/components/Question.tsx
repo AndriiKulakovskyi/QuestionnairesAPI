@@ -53,6 +53,103 @@ export default function Question({ question, value, onChange }: QuestionProps) {
     );
   }
   
+  if (question.type === 'scale') {
+    const scale = (question as any).scale || {};
+    const minValue = scale.min_value ?? 0;
+    const maxValue = scale.max_value ?? 10;
+    const step = scale.step ?? 1;
+    
+    return (
+      <div className="mb-8 p-6 bg-gray-800 border border-gray-700 rounded-lg">
+        <label className="block">
+          <div className="text-lg font-semibold text-gray-100 mb-2">
+            {question.text}
+            {question.required && <span className="text-red-400 ml-1">*</span>}
+          </div>
+          
+          <div className="mt-6">
+            {/* Min label */}
+            <div className="text-sm text-gray-400 mb-2">{scale.min_label}</div>
+            
+            {/* Slider */}
+            <input
+              type="range"
+              min={minValue}
+              max={maxValue}
+              step={step}
+              value={value ?? minValue}
+              onChange={(e) => handleChange(parseFloat(e.target.value))}
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+            
+            {/* Max label */}
+            <div className="text-sm text-gray-400 mt-2">{scale.max_label}</div>
+            
+            {/* Current value display */}
+            <div className="mt-4 text-center">
+              <span className="text-2xl font-bold text-blue-400">{value ?? minValue}</span>
+              <span className="text-gray-500 ml-2">/ {maxValue}</span>
+            </div>
+            
+            {scale.center_hint && (
+              <div className="mt-2 text-center text-xs text-gray-500">{scale.center_hint}</div>
+            )}
+          </div>
+        </label>
+      </div>
+    );
+  }
+  
+  if (question.type === 'string') {
+    const pattern = question.constraints.pattern;
+    
+    return (
+      <div className="mb-8 p-6 bg-gray-800 border border-gray-700 rounded-lg">
+        <label className="block">
+          <div className="text-lg font-semibold text-gray-100 mb-2">
+            {question.text}
+            {question.required && <span className="text-red-400 ml-1">*</span>}
+          </div>
+          {question.help && (
+            <p className="text-sm text-gray-400 mb-4">{question.help}</p>
+          )}
+          
+          <input
+            type="text"
+            value={value ?? ''}
+            onChange={(e) => handleChange(e.target.value)}
+            pattern={pattern}
+            className="w-full px-4 py-2 bg-gray-750 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            placeholder="Enter value"
+          />
+        </label>
+      </div>
+    );
+  }
+  
+  if (question.type === 'time') {
+    return (
+      <div className="mb-8 p-6 bg-gray-800 border border-gray-700 rounded-lg">
+        <label className="block">
+          <div className="text-lg font-semibold text-gray-100 mb-2">
+            {question.text}
+            {question.required && <span className="text-red-400 ml-1">*</span>}
+          </div>
+          {question.help && (
+            <p className="text-sm text-gray-400 mb-4">{question.help}</p>
+          )}
+          
+          <input
+            type="time"
+            value={value ?? ''}
+            onChange={(e) => handleChange(e.target.value)}
+            className="px-4 py-2 bg-gray-750 border border-gray-600 rounded-lg text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          />
+        </label>
+      </div>
+    );
+  }
+  
   if (question.type === 'single_choice') {
     return (
       <div className="mb-8 p-6 bg-gray-800 border border-gray-700 rounded-lg">
