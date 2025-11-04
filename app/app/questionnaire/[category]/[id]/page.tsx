@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getQuestionnaire, submitAnswers } from '../../lib/api';
-import { QuestionnaireDetail, ScoreResponse } from '../../types/questionnaire';
-import Question from '../../components/Question';
-import Results from '../../components/Results';
+import { getQuestionnaire, submitAnswers } from '../../../lib/api';
+import { QuestionnaireDetail, ScoreResponse } from '../../../types/questionnaire';
+import Question from '../../../components/Question';
+import Results from '../../../components/Results';
 
 export default function QuestionnairePage() {
   const params = useParams();
   const router = useRouter();
+  const category = params.category as 'auto' | 'hetero';
   const questionnaireId = params.id as string;
 
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireDetail | null>(null);
@@ -21,14 +22,22 @@ export default function QuestionnairePage() {
   const [result, setResult] = useState<ScoreResponse | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  // Validate category
   useEffect(() => {
-    if (!questionnaireId) return;
+    if (category && category !== 'auto' && category !== 'hetero') {
+      setError('Invalid category. Must be "auto" or "hetero".');
+      setLoading(false);
+    }
+  }, [category]);
+
+  useEffect(() => {
+    if (!questionnaireId || !category || (category !== 'auto' && category !== 'hetero')) return;
 
     async function loadQuestionnaire() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getQuestionnaire(questionnaireId);
+        const data = await getQuestionnaire(category, questionnaireId);
         setQuestionnaire(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load questionnaire');
@@ -38,7 +47,7 @@ export default function QuestionnairePage() {
     }
 
     loadQuestionnaire();
-  }, [questionnaireId]);
+  }, [questionnaireId, category]);
 
   const handleAnswerChange = (questionId: string, value: number | string) => {
     setAnswers((prev) => ({
@@ -70,7 +79,7 @@ export default function QuestionnairePage() {
     try {
       setSubmitting(true);
       setValidationErrors([]);
-      const response = await submitAnswers(questionnaireId, answers);
+      const response = await submitAnswers(category, questionnaireId, answers);
       setResult(response);
       // Scroll to top to show results
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -91,6 +100,9 @@ export default function QuestionnairePage() {
     setValidationErrors([]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const backLink = category === 'auto' ? '/auto-questionnaires' : '/hetero-questionnaires';
+  const categoryLabel = category === 'auto' ? 'Auto Questionnaires' : 'Hetero Questionnaires';
 
   // Loading state
   if (loading) {
@@ -118,8 +130,8 @@ export default function QuestionnairePage() {
             </div>
             <p>{error}</p>
           </div>
-          <Link href="/" className="inline-block mt-6 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-100 font-medium rounded-lg transition-colors">
-            Back to Home
+          <Link href={backLink} className="inline-block mt-6 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-100 font-medium rounded-lg transition-colors">
+            Back to {categoryLabel}
           </Link>
         </div>
       </div>
@@ -152,11 +164,11 @@ export default function QuestionnairePage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-flex items-center">
+          <Link href={backLink} className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-flex items-center">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to questionnaires
+            Back to {categoryLabel}
           </Link>
           
           <h1 className="text-3xl font-bold text-gray-100 mt-4 mb-2">
@@ -169,6 +181,11 @@ export default function QuestionnairePage() {
             </span>
             <span className="px-3 py-1 bg-gray-800 rounded-full">
               {questionnaire.metadata.language}
+            </span>
+            <span className={`px-3 py-1 rounded-full ${
+              category === 'auto' ? 'bg-blue-900/30 text-blue-300' : 'bg-green-900/30 text-green-300'
+            }`}>
+              {categoryLabel}
             </span>
             {questionnaire.metadata.reference_period && (
               <span className="px-3 py-1 bg-gray-800 rounded-full">

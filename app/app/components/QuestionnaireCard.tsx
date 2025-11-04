@@ -3,11 +3,12 @@ import { QuestionnaireListItem } from '../types/questionnaire';
 
 interface QuestionnaireCardProps {
   questionnaire: QuestionnaireListItem;
+  category: 'auto' | 'hetero';
 }
 
-export default function QuestionnaireCard({ questionnaire }: QuestionnaireCardProps) {
+export default function QuestionnaireCard({ questionnaire, category }: QuestionnaireCardProps) {
   return (
-    <Link href={`/questionnaire/${encodeURIComponent(questionnaire.id)}`}>
+    <Link href={`/questionnaire/${category}/${encodeURIComponent(questionnaire.id)}`}>
       <div className="block p-6 bg-gray-800 border border-gray-700 rounded-lg shadow-md hover:bg-gray-750 hover:border-gray-600 transition-all duration-200 cursor-pointer h-full">
         <div className="flex items-start justify-between mb-3">
           <h3 className="text-xl font-bold text-gray-100 tracking-tight">
