@@ -24,7 +24,8 @@ from .auto import (
 
 # Import hetero questionnaires (clinician-rated/heterogeneous)
 from .hetero import (
-    ALDA, ALDAError
+    ALDA, ALDAError,
+    CGI, CGIError
 )
 
 __all__ = [
@@ -50,6 +51,7 @@ __all__ = [
     "CTI", "CTIError",
     "WURS25", "WURS25Error",
     # Hetero questionnaires
-    "ALDA", "ALDAError"
+    "ALDA", "ALDAError",
+    "CGI", "CGIError"
 ]
 
