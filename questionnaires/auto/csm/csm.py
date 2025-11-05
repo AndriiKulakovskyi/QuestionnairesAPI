@@ -52,18 +52,18 @@ class CSM:
     QUESTIONS = [
         {
             "id": "q1",
-            "text": "Heure de lever préférée si entièrement libre d'organiser la journée ?",
+            "text": "En ne considérant que le rythme de vie qui vous convient le mieux, à quelle heure vous lèveriez-vous en étant entièrement libre d'organiser votre journée ?",
             "options": [
                 (5, "entre 5h 00 et 6h 30"),
                 (4, "entre 6h 30 et 7h 45"),
                 (3, "entre 7h 45 et 9h 45"),
-                (2, "entre 9h 45 et 11h 00"),
-                (1, "entre 11h 00 et midi")
+                (2, "entre 9h45 et 11h 00"),
+                (1, "entre 11h00 et midi")
             ]
         },
         {
             "id": "q2",
-            "text": "Heure de coucher préférée si entièrement libre d'organiser la soirée ?",
+            "text": "En ne considérant que le rythme de vie qui vous convient le mieux, à quelle heure vous coucheriez-vous sachant que vous êtes entièrement libre d'organiser votre soirée ?",
             "options": [
                 (5, "entre 20h 00 et 21h 00"),
                 (4, "entre 21h 00 et 22h 15"),
@@ -74,7 +74,7 @@ class CSM:
         },
         {
             "id": "q3",
-            "text": "Facilité à vous lever le matin (conditions adéquates) ?",
+            "text": "Dans des conditions adéquates (environnement favorable, sans contraintes particulières, etc.), à quel point cela vous est-il facile de vous lever le matin ?",
             "options": [
                 (1, "pas facile du tout"),
                 (2, "pas très facile"),
@@ -84,7 +84,7 @@ class CSM:
         },
         {
             "id": "q4",
-            "text": "Éveil durant la demi-heure suivant le réveil ?",
+            "text": "Comment vous sentez-vous durant la demi-heure qui suit votre réveil du matin ?",
             "options": [
                 (1, "pas du tout réveillé"),
                 (2, "peu éveillé"),
@@ -94,7 +94,7 @@ class CSM:
         },
         {
             "id": "q5",
-            "text": "État général durant la demi-heure suivant le réveil ?",
+            "text": "Comment vous sentez-vous durant la demi-heure qui suit votre réveil du matin ?",
             "options": [
                 (1, "très fatigué"),
                 (2, "plutôt fatigué"),
@@ -104,7 +104,7 @@ class CSM:
         },
         {
             "id": "q6",
-            "text": "Forme pour pratiquer une séance de sport 7–8h le matin (deux fois/semaine) ?",
+            "text": "Vous avez décidé de faire un sport. Un ami vous suggère de faire deux fois par semaine des séances d'une heure. Le meilleur moment pour lui est de 7 à 8 heures du matin. Ne considérant que le rythme qui vous convient le mieux, dans quelle forme pensez-vous être ?",
             "options": [
                 (4, "Bonne forme"),
                 (3, "Forme raisonnable"),
@@ -114,7 +114,7 @@ class CSM:
         },
         {
             "id": "q7",
-            "text": "Heure du soir à laquelle vous devez aller vous coucher (fatigue) ?",
+            "text": "A quelle heure dans la soirée vous sentez-vous fatigué au point de devoir aller vous coucher ?",
             "options": [
                 (5, "entre 20h 00 et 21h 00"),
                 (4, "entre 21h 00 et 22h 15"),
@@ -125,7 +125,7 @@ class CSM:
         },
         {
             "id": "q8",
-            "text": "Plage horaire à laquelle vous seriez le plus efficace pour un examen de 2h ?",
+            "text": "Vous devez être à votre maximum de performance pour un examen écrit qui dure 2 heures. On vous laisse libre de choisir l'heure à laquelle vous pensez être le plus efficace. Ce sera:",
             "options": [
                 (4, "entre 8h 00 et 10h 00"),
                 (3, "entre 11h 00 et 13h 00"),
@@ -135,17 +135,17 @@ class CSM:
         },
         {
             "id": "q9",
-            "text": "Vous vous décririez comme…",
+            "text": "On entend souvent dire que telle personne est \"du matin\" et que telle autre personne est \"du soir\". En ce qui vous concerne, vous seriez :",
             "options": [
-                (4, "tout à fait « du matin »"),
-                (3, "plutôt « du matin » que « du soir »"),
-                (2, "plutôt « du soir » que « du matin »"),
-                (1, "tout à fait « du soir »")
+                (4, "tout à fait \"du matin\""),
+                (3, "plutôt \"du matin\" que \"du soir\""),
+                (2, "plutôt \"du soir\" que \"du matin\""),
+                (1, "tout à fait \"du soir\"")
             ]
         },
         {
             "id": "q10",
-            "text": "Heure de lever préférée pour une journée de travail de 8h (librement organisée) ?",
+            "text": "A quelle heure vous lèveriez-vous en prévision d'une journée de travail de 8 heures que vous êtes totalement libre d'organiser ?",
             "options": [
                 (4, "avant 6h 30"),
                 (3, "entre 6h 30 et 7h 30"),
@@ -155,7 +155,7 @@ class CSM:
         },
         {
             "id": "q11",
-            "text": "Si vous deviez toujours vous lever à 6h 00, cela vous paraîtrait…",
+            "text": "Si vous deviez toujours vous lever à 6h 00, cela vous paraitrait ?",
             "options": [
                 (1, "affreusement difficile"),
                 (2, "plutôt difficile et déplaisant"),
@@ -165,7 +165,7 @@ class CSM:
         },
         {
             "id": "q12",
-            "text": "Après une bonne nuit, temps pour être pleinement réveillé ?",
+            "text": "Après une bonne nuit de sommeil, combien de temps vous faut-il pour être pleinement réveillé ?",
             "options": [
                 (4, "moins de 10 minutes"),
                 (3, "entre 11 et 20 minutes"),
@@ -175,12 +175,12 @@ class CSM:
         },
         {
             "id": "q13",
-            "text": "Dans quelle partie de la journée êtes-vous le plus actif(ve) ?",
+            "text": "Dans quelle partie de la journée êtes-vous le plus actif ?",
             "options": [
-                (4, "nettement actif le matin"),
+                (4, "nettement actif le matin (bien réveillé le matin et fatigué le soir)"),
                 (3, "plutôt actif le matin"),
                 (2, "plutôt actif le soir"),
-                (1, "nettement actif le soir")
+                (1, "nettement actif le soir (fatigué le matin et bien réveillé le soir)")
             ]
         }
     ]
