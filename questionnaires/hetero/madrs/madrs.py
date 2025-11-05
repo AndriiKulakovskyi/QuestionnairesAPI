@@ -118,57 +118,173 @@ class MADRS:
     
     def get_questions(self) -> List[Dict[str, Any]]:
         """
-        Get all 10 MADRS items.
+        Get all 10 MADRS items with complete French text.
         
         Returns:
             List of 10 question dictionaries
         """
-        # Item texts exactly as in the French MADRS
-        item_texts = [
-            "Tristesse apparente",
-            "Tristesse exprimée",
-            "Tension intérieure (angoisse, effroi, panique)",
-            "Réduction du sommeil (durée/profondeur)",
-            "Réduction de l'appétit",
-            "Difficultés de concentration",
-            "Lassitude (inertie à se mettre en route)",
-            "Incapacité à ressentir (anesthésie affective)",
-            "Pensées pessimistes (culpabilité, autodépréciation, ruine)",
-            "Idées de suicide (de « la vie ne vaut pas la peine » à projets explicites)"
-        ]
-        
-        # Detailed descriptions for each item (for clinician guidance)
-        item_descriptions = [
-            "Évaluer la tristesse, la mélancolie, le désespoir reflétés dans la parole, l'expression faciale et la posture. Coter selon la profondeur et l'incapacité à se dérider.",
-            "Évaluer comment le patient rapporte subjectivement son humeur dépressive, sans tenir compte si cela est reflété dans son apparence. Inclut abattement, découragement, sentiment de désespoir.",
-            "Représente les sentiments de malaise mal défini, d'irritabilité, de tourment intérieur, de tension nerveuse allant jusqu'à la panique, l'effroi ou l'angoisse. Coter selon l'intensité, la fréquence, la durée et le besoin de réassurance.",
-            "Représente la réduction de la durée ou de la profondeur du sommeil par rapport aux habitudes du patient en bonne santé.",
-            "Représente le sentiment de perte d'appétit. Coter la perte d'envie de manger ou le besoin de se forcer à manger.",
-            "Représente les difficultés à rassembler ses pensées allant jusqu'à l'incapacité à se concentrer. Coter selon l'intensité, la fréquence et le degré d'incapacité produite.",
-            "Représente une difficulté à se mettre en route ou une lenteur à commencer et à accomplir les activités quotidiennes.",
-            "Représente l'expérience subjective de réduction d'intérêt pour l'environnement ou les activités qui normalement donnent du plaisir. L'incapacité à réagir avec une émotion appropriée aux circonstances ou aux gens.",
-            "Représente les pensées de culpabilité, d'infériorité, d'autodépréciation, de péché, d'appauvrissement ou de ruine.",
-            "Représente le sentiment que la vie ne vaut pas la peine d'être vécue, qu'une mort naturelle serait la bienvenue, des idées de suicide et des préparatifs au suicide. Les tentatives de suicide ne devraient pas en elles-mêmes influencer la cotation."
+        # Complete MADRS items with descriptions and options
+        items = [
+            {
+                "id": "q1",
+                "title": "Tristesse apparente",
+                "description": "Correspond au découragement, à la dépression et au désespoir (plus qu'un simple cafard passager) reflétés par la parole, la mimique et la posture. Coter selon la profondeur et l'incapacité à se dérider.",
+                "options": [
+                    {"code": 0, "label": "0 Pas de tristesse."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Semble découragé mais peut se dérider sans difficulté."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Paraît triste et malheureux la plupart du temps."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Semble malheureux tout le temps. Extrêmement découragé."}
+                ]
+            },
+            {
+                "id": "q2",
+                "title": "Tristesse exprimée",
+                "description": "Correspond à l'expression d'une humeur dépressive, que celle-ci soit apparente ou non. Inclut le cafard, le découragement ou le sentiment de détresse sans espoir. Coter selon l'intensité, la durée à laquelle l'humeur est dite être influencée par les événements.",
+                "options": [
+                    {"code": 0, "label": "0 Tristesse occasionnelle en rapport avec les circonstances."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Triste ou cafardeux, mais se déride sans difficulté."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Sentiment envahissant de tristesse ou de dépression ; l'humeur est encore influencée par les circonstances extérieures."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Tristesse, désespoir ou découragement permanents ou sans fluctuations."}
+                ]
+            },
+            {
+                "id": "q3",
+                "title": "Tension intérieure",
+                "description": "Correspond aux sentiments de malaise mal défini, d'irritabilité, d'agitation intérieure, de tension nerveuse allant jusqu'à la panique, l'effroi ou l'angoisse. Coter selon l'intensité, la fréquence, la durée, le degré de réassurance nécessaire.",
+                "options": [
+                    {"code": 0, "label": "0 Calme. Tension intérieure seulement passagère."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Sentiments occasionnels d'irritabilité et de malaise mal défini."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Sentiments continuels de tension intérieure ou panique intermittente que le malade ne peut maîtriser qu'avec difficulté."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Effroi ou angoisse sans relâche. Panique envahissante."}
+                ]
+            },
+            {
+                "id": "q4",
+                "title": "Réduction de sommeil",
+                "description": "Correspond à une réduction de la durée ou de la profondeur du sommeil par comparaison avec le sommeil du patient lorsqu'il n'est pas malade.",
+                "options": [
+                    {"code": 0, "label": "0 Dort comme d'habitude."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Légère difficulté à s'endormir ou sommeil légèrement réduit, léger ou agité."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Sommeil réduit ou interrompu au moins deux heures."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Moins de deux ou trois heures de sommeil."}
+                ]
+            },
+            {
+                "id": "q5",
+                "title": "Réduction de l'appétit",
+                "description": "Correspond au sentiment d'une perte de l'appétit comparé à l'appétit habituel. Coter l'absence de désir de nourriture ou le besoin de se forcer pour manger.",
+                "options": [
+                    {"code": 0, "label": "0 Appétit normal ou augmenté."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Appétit légèrement réduit."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Pas d'appétit. Nourriture sans goût."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Ne mange que si on le persuade."}
+                ]
+            },
+            {
+                "id": "q6",
+                "title": "Difficultés de concentration",
+                "description": "Correspond aux difficultés à rassembler ses pensées allant jusqu'à l'incapacité à se concentrer. Coter l'intensité, la fréquence et le degré d'incapacité.",
+                "options": [
+                    {"code": 0, "label": "0 Pas de difficultés de concentration."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Difficultés occasionnelles à rassembler ses pensées."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Difficultés à se concentrer et à maintenir son attention, ce qui réduit la capacité à lire ou à soutenir une conversation."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Incapable de lire ou de converser sans grande difficulté."}
+                ]
+            },
+            {
+                "id": "q7",
+                "title": "Lassitude",
+                "description": "Correspond à une difficulté à se mettre en train ou une lenteur à commencer et à accomplir les activités quotidiennes.",
+                "options": [
+                    {"code": 0, "label": "0 Guère de difficultés à se mettre en route. Pas de lenteur."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Difficultés à commencer des activités."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Difficultés à commencer des activités routinières qui sont poursuivies avec effort."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Grande lassitude. Incapable de faire quoi que ce soit sans aide."}
+                ]
+            },
+            {
+                "id": "q8",
+                "title": "Incapacité à ressentir",
+                "description": "Correspond à l'expérience subjective d'une réduction d'intérêt pour le monde environnant, ou les activités qui donnent normalement du plaisir. La capacité à réagir avec une émotion appropriée aux circonstances ou aux gens est réduite.",
+                "options": [
+                    {"code": 0, "label": "0 Intérêt normal pour le monde environnant et pour les gens."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Capacité réduite à prendre du plaisir à ses intérêts habituels."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Perte d'intérêt pour le monde environnant. Perte de sentiment pour les amis et les connaissances."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Sentiment d'être paralysé émotionnellement, incapacité à ressentir de la colère, du chagrin ou du plaisir et impossibilité complète ou même douloureuse de ressentir quelque chose pour les proches parents et amis."}
+                ]
+            },
+            {
+                "id": "q9",
+                "title": "Pensées pessimistes",
+                "description": "Correspond aux idées de culpabilité, d'infériorité, d'auto-accusation, de pêché, de remords ou de ruine.",
+                "options": [
+                    {"code": 0, "label": "0 Pas de pensée pessimiste."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Idées intermittentes d'échec, d'auto-accusation ou d'autodépréciation."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Auto-accusations persistantes ou idées de culpabilité ou péché précises mais encore rationnelles. Pessimisme croissant à propos du futur."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Idées délirantes de ruine, de remords ou péché inexpiable. Auto-accusations absurdes ou inébranlables."}
+                ]
+            },
+            {
+                "id": "q10",
+                "title": "Idées de suicide",
+                "description": "Correspond au sentiment que la vie ne vaut pas le peine d'être vécue, qu'une mort naturelle serait la bienvenue, idées de suicide et préparatifs au suicide. Les tentatives de suicide ne doivent pas, en elles-mêmes, influencer la cotation.",
+                "options": [
+                    {"code": 0, "label": "0 Jouit de la vie ou la prend comme elle vient."},
+                    {"code": 1, "label": "1"},
+                    {"code": 2, "label": "2 Fatigué de la vie, idées de suicide seulement passagères."},
+                    {"code": 3, "label": "3"},
+                    {"code": 4, "label": "4 Il vaudrait mieux être mort. Les idées de suicide sont courantes et le suicide est considéré comme une solution possible mais sans projet ou intention précis."},
+                    {"code": 5, "label": "5"},
+                    {"code": 6, "label": "6 Projets explicites de suicide si l'occasion se présente. Préparatifs de suicide."}
+                ]
+            }
         ]
         
         questions = []
         
-        for i, (text, description) in enumerate(zip(item_texts, item_descriptions), start=1):
+        for i, item in enumerate(items, start=1):
             questions.append({
-                "id": f"q{i}",
+                "id": item["id"],
                 "section_id": "sec_items",
-                "text": f"{i}. {text}",
-                "description": description,
+                "text": f"{i} - {item['title']}",
+                "description": item["description"],
                 "type": "single_choice",
                 "required": True,
                 "options": [
-                    {"code": 0, "label": "0", "score": 0, "anchor": "defined"},
-                    {"code": 1, "label": "1", "score": 1, "anchor": "intermediate"},
-                    {"code": 2, "label": "2", "score": 2, "anchor": "defined"},
-                    {"code": 3, "label": "3", "score": 3, "anchor": "intermediate"},
-                    {"code": 4, "label": "4", "score": 4, "anchor": "defined"},
-                    {"code": 5, "label": "5", "score": 5, "anchor": "intermediate"},
-                    {"code": 6, "label": "6", "score": 6, "anchor": "defined"}
+                    {
+                        "code": opt["code"],
+                        "label": opt["label"],
+                        "score": opt["code"],
+                        "anchor": "defined" if opt["code"] in [0, 2, 4, 6] else "intermediate"
+                    }
+                    for opt in item["options"]
                 ],
                 "constraints": {
                     "value_type": "integer",
@@ -188,15 +304,23 @@ class MADRS:
         """
         return [
             {
+                "id": "sec_instructions",
+                "label": "Consigne",
+                "description": (
+                    "La cotation doit se fonder sur l'entretien clinique allant de questions générales sur les symptômes à des questions "
+                    "plus précises qui permettent une cotation exacte de la sévérité. Le cotateur doit décider si la note est à un point "
+                    "nettement défini de l'échelle (0, 2, 4, 6) ou à un point intermédiaire (1, 3, 5). Il est rare qu'un patient déprimé ne "
+                    "puisse pas être coté sur les items de l'échelle. Si des réponses précises ne peuvent être obtenues du malade, toutes "
+                    "les indications pertinentes et les informations d'autres sources doivent être utilisées comme base de la cotation en "
+                    "accord avec la clinique. Cocher pour chaque item la case qui correspond au chiffre le plus adéquat."
+                ),
+                "question_ids": []
+            },
+            {
                 "id": "sec_items",
                 "label": "Items 1–10",
                 "description": "Cotation 0–6 par entretien clinique",
-                "question_ids": [f"q{i}" for i in range(1, 11)],
-                "instructions": (
-                    "Chaque item doit être coté de 0 à 6 en se basant sur un entretien clinique. "
-                    "Les ancrages 0, 2, 4 et 6 sont clairement définis. Les valeurs 1, 3 et 5 "
-                    "sont utilisées pour les niveaux intermédiaires entre les ancrages."
-                )
+                "question_ids": [f"q{i}" for i in range(1, 11)]
             }
         ]
     
