@@ -56,8 +56,57 @@ export default function Results({ result, onRestart }: ResultsProps) {
             // Skip already displayed fields
             if (key === 'total_score' || key === 'range') return null;
 
+            // Helper function to render a value
+            const renderValue = (val: any): string => {
+              if (val === null || val === undefined) return 'N/A';
+              if (Array.isArray(val)) return val.join(', ');
+              if (typeof val === 'object') return JSON.stringify(val);
+              return String(val);
+            };
+
             // Handle different value types
-            if (typeof value === 'object' && value !== null) {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              // Check if this is a nested object structure (like subscales)
+              const firstValue = Object.values(value)[0];
+              const isNestedObjects = typeof firstValue === 'object' && firstValue !== null && !Array.isArray(firstValue);
+
+              if (isNestedObjects) {
+                // Handle 3-level nesting (e.g., subscales)
+                return (
+                  <div key={key} className="p-4 bg-gray-750 rounded-lg border border-gray-600">
+                    <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
+                      {key.replace(/_/g, ' ')}
+                    </h4>
+                    <div className="space-y-3">
+                      {Object.entries(value).map(([subKey, subValue]) => (
+                        <div key={subKey} className="p-3 bg-gray-800 rounded border border-gray-700">
+                          <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                            {typeof subValue === 'object' && subValue !== null && 'label' in subValue
+                              ? (subValue as any).label
+                              : subKey.replace(/_/g, ' ')}
+                          </h5>
+                          <div className="space-y-1">
+                            {typeof subValue === 'object' && subValue !== null && (
+                              Object.entries(subValue as Record<string, any>).map(([prop, propValue]) => {
+                                // Skip 'name' and 'label' as they're used above
+                                if (prop === 'name' || prop === 'label') return null;
+                                return (
+                                  <div key={prop} className="flex justify-between text-xs">
+                                    <span className="text-gray-500">{prop.replace(/_/g, ' ')}:</span>
+                                    <span className="text-gray-300">{renderValue(propValue)}</span>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Handle 2-level nesting (regular objects)
               return (
                 <div key={key} className="p-4 bg-gray-750 rounded-lg border border-gray-600">
                   <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-2">
@@ -67,7 +116,7 @@ export default function Results({ result, onRestart }: ResultsProps) {
                     {Object.entries(value).map(([subKey, subValue]) => (
                       <div key={subKey} className="flex justify-between text-sm">
                         <span className="text-gray-400">{subKey.replace(/_/g, ' ')}:</span>
-                        <span className="text-gray-200 font-medium">{String(subValue)}</span>
+                        <span className="text-gray-200 font-medium">{renderValue(subValue)}</span>
                       </div>
                     ))}
                   </div>
@@ -80,7 +129,7 @@ export default function Results({ result, onRestart }: ResultsProps) {
                 <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-2">
                   {key.replace(/_/g, ' ')}
                 </h4>
-                <p className="text-gray-200">{String(value)}</p>
+                <p className="text-gray-200">{renderValue(value)}</p>
               </div>
             );
           })}

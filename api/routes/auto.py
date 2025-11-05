@@ -195,8 +195,13 @@ def submit_auto_questionnaire_answers(
                 detail=f"Questionnaire '{questionnaire_id}' does not support scoring"
             )
         
-        # Convert result to dict
-        score_data = result.dict() if hasattr(result, 'dict') else result
+        # Convert result to dict (using model_dump for Pydantic v2 with mode='json' for proper serialization)
+        if hasattr(result, 'model_dump'):
+            score_data = result.model_dump(mode='json')
+        elif hasattr(result, 'dict'):
+            score_data = result.dict()
+        else:
+            score_data = result
         
         return ScoreResponse(
             questionnaire_id=questionnaire_id,
