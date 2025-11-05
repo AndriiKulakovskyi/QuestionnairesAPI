@@ -191,7 +191,7 @@ class ASRM:
     
     def get_sections(self) -> List[Dict[str, Any]]:
         """Get all sections"""
-        return [section.dict() for section in self._sections]
+        return [section.model_dump() for section in self._sections]
     
     def get_questions(self, section_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """
@@ -206,13 +206,13 @@ class ASRM:
         questions = self._questions
         if section_id:
             questions = [q for q in questions if q.section_id == section_id]
-        return [q.dict() for q in questions]
+        return [q.model_dump() for q in questions]
     
     def get_question_by_id(self, question_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific question by ID"""
         for q in self._questions:
             if q.id == question_id:
-                return q.dict()
+                return q.model_dump()
         return None
     
     def validate_answers(self, answers: Dict[str, int]) -> ValidationResult:
