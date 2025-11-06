@@ -245,6 +245,31 @@ class EGF:
             }
         ]
     
+    def validate_answers(self, answers: Dict[str, int]) -> Dict[str, Any]:
+        """
+        Validate EGF answers from dictionary format.
+        
+        Args:
+            answers: Dictionary mapping question IDs to response values
+        
+        Returns:
+            Dictionary containing validation results with 'valid', 'errors', and 'warnings' keys
+        """
+        errors = []
+        warnings = []
+        
+        # Check if egf_score is present
+        if "egf_score" not in answers:
+            errors.append("Item manquant: egf_score")
+            return {"valid": False, "errors": errors, "warnings": warnings}
+        
+        score = answers["egf_score"]
+        
+        # Validate the score using existing method
+        validation = self.validate_score(score)
+        
+        return validation
+    
     def validate_score(self, score: int) -> Dict[str, Any]:
         """
         Validate EGF score.
@@ -276,39 +301,39 @@ class EGF:
                 )
             elif score <= 10:
                 warnings.append(
-                    "⚠️ ALERTE CRITIQUE: Danger persistant (score 1-10). "
+                    "ALERTE CRITIQUE: Danger persistant (score 1-10). "
                     "Risque suicidaire ou d'auto/hétéro-agression élevé. "
                     "Surveillance constante et hospitalisation généralement nécessaires."
                 )
             elif score <= 20:
                 warnings.append(
-                    "🚨 ALERTE URGENTE: Altération massive (score 11-20). "
+                    "ALERTE URGENTE: Altération massive (score 11-20). "
                     "Danger potentiel. Hospitalisation fortement recommandée."
                 )
             elif score <= 30:
                 warnings.append(
-                    "🔴 SÉVÈRE: Altération majeure (score 21-30). "
+                    "SÉVÈRE: Altération majeure (score 21-30). "
                     "Fonctionnement gravement compromis. Traitement intensif nécessaire."
                 )
             elif score <= 40:
                 warnings.append(
-                    "🟠 GRAVE: Altération importante (score 31-40). "
+                    "GRAVE: Altération importante (score 31-40). "
                     "Fonctionnement sérieusement compromis dans plusieurs domaines. "
                     "Traitement actif recommandé."
                 )
             elif score <= 50:
                 warnings.append(
-                    "🟡 MODÉRÉ À GRAVE: Symptômes graves (score 41-50). "
+                    "MODÉRÉ À GRAVE: Symptômes graves (score 41-50). "
                     "Altération significative nécessitant traitement structuré."
                 )
             elif score <= 60:
                 warnings.append(
-                    "⚠️ MODÉRÉ: Symptômes ou difficultés modérés (score 51-60). "
+                    "MODÉRÉ: Symptômes ou difficultés modérés (score 51-60). "
                     "Traitement recommandé."
                 )
             elif score <= 70:
                 warnings.append(
-                    "🟢 LÉGER: Symptômes légers (score 61-70). "
+                    "LÉGER: Symptômes légers (score 61-70). "
                     "Fonctionnement globalement satisfaisant avec quelques difficultés."
                 )
             # Scores 71+ are generally good functioning, no warnings needed
@@ -358,12 +383,12 @@ class EGF:
         else:  # score >= 91
             return "91-100"
     
-    def calculate_score(self, score: int) -> Dict[str, Any]:
+    def calculate_score(self, answers: Dict[str, int]) -> Dict[str, Any]:
         """
         Calculate and interpret EGF score.
         
         Args:
-            score: EGF score value (0-100)
+            answers: Dictionary mapping question IDs to response values (expects 'egf_score' key)
         
         Returns:
             Dictionary containing:
@@ -377,10 +402,13 @@ class EGF:
         Raises:
             EGFError: If validation fails
         """
-        # Validate score
-        validation = self.validate_score(score)
+        # Validate answers
+        validation = self.validate_answers(answers)
         if not validation["valid"]:
             raise EGFError(f"Validation échouée: {'; '.join(validation['errors'])}")
+        
+        # Extract score from answers
+        score = answers["egf_score"]
         
         # Get band
         band = self.get_band(score)
@@ -447,7 +475,7 @@ class EGF:
             )
         elif score <= 10:
             interpretation += (
-                "🆘 DANGER PERSISTANT - URGENCE MAXIMALE\n\n"
+                "DANGER PERSISTANT - URGENCE MAXIMALE\n\n"
                 "Le patient présente un danger persistant grave de se blesser ou de blesser "
                 "autrui, OU une incapacité persistante à maintenir l'hygiène corporelle minimale.\n\n"
                 "Signes cliniques typiques:\n"
@@ -457,7 +485,7 @@ class EGF:
                 "• Désorganisation psychotique massive\n"
                 "• Risque imminent pour soi-même ou autrui\n\n"
                 "Actions URGENTES requises:\n"
-                "• 🚨 HOSPITALISATION IMMÉDIATE (généralement involontaire)\n"
+                "• HOSPITALISATION IMMÉDIATE (généralement involontaire)\n"
                 "• Surveillance constante (1:1) 24h/24\n"
                 "• Évaluation psychiatrique urgente\n"
                 "• Mesures de protection (retrait objets dangereux, chambre sécurisée)\n"
@@ -467,7 +495,7 @@ class EGF:
             )
         elif score <= 20:
             interpretation += (
-                "🚨 ALTÉRATION MASSIVE - DANGER IMMINENT\n\n"
+                "ALTÉRATION MASSIVE - DANGER IMMINENT\n\n"
                 "Le patient présente un danger potentiel de se blesser ou de blesser autrui, "
                 "OU une incapacité occasionnelle à maintenir l'hygiène minimale, OU une "
                 "altération massive de la communication.\n\n"
@@ -478,7 +506,7 @@ class EGF:
                 "• Communication gravement altérée (mutisme, incohérence totale)\n"
                 "• Isolement social complet\n\n"
                 "Actions URGENTES requises:\n"
-                "• 🚨 HOSPITALISATION FORTEMENT RECOMMANDÉE\n"
+                "• HOSPITALISATION FORTEMENT RECOMMANDÉE\n"
                 "• Évaluation du risque suicidaire/agressif\n"
                 "• Surveillance rapprochée\n"
                 "• Traitement psychiatrique intensif\n"
@@ -487,7 +515,7 @@ class EGF:
             )
         elif score <= 30:
             interpretation += (
-                "🔴 ALTÉRATION MAJEURE - INTERVENTION INTENSIVE NÉCESSAIRE\n\n"
+                "ALTÉRATION MAJEURE - INTERVENTION INTENSIVE NÉCESSAIRE\n\n"
                 "Le comportement est considérablement influencé par des idées délirantes ou "
                 "hallucinations, OU altération majeure dans plusieurs domaines.\n\n"
                 "Signes cliniques typiques:\n"
@@ -506,7 +534,7 @@ class EGF:
             )
         elif score <= 40:
             interpretation += (
-                "🟠 ALTÉRATION IMPORTANTE - TRAITEMENT ACTIF REQUIS\n\n"
+                "ALTÉRATION IMPORTANTE - TRAITEMENT ACTIF REQUIS\n\n"
                 "Altération importante dans plusieurs domaines : travail, relations familiales, "
                 "jugement, pensée ou humeur.\n\n"
                 "Signes cliniques typiques:\n"
@@ -526,7 +554,7 @@ class EGF:
             )
         elif score <= 50:
             interpretation += (
-                "🟡 SYMPTÔMES GRAVES - TRAITEMENT STRUCTURÉ NÉCESSAIRE\n\n"
+                "SYMPTÔMES GRAVES - TRAITEMENT STRUCTURÉ NÉCESSAIRE\n\n"
                 "Symptômes graves (idéation suicidaire, rituels obsessionnels sévères, "
                 "comportements antisociaux fréquents) OU altération grave du fonctionnement.\n\n"
                 "Signes cliniques typiques:\n"
@@ -546,7 +574,7 @@ class EGF:
             )
         elif score <= 60:
             interpretation += (
-                "⚠️ SYMPTÔMES MODÉRÉS - TRAITEMENT RECOMMANDÉ\n\n"
+                "SYMPTÔMES MODÉRÉS - TRAITEMENT RECOMMANDÉ\n\n"
                 "Symptômes modérés (affect aplati, discours circonstanciel, attaques de panique "
                 "occasionnelles) OU difficultés modérées dans le fonctionnement.\n\n"
                 "Signes cliniques typiques:\n"
@@ -565,7 +593,7 @@ class EGF:
             )
         elif score <= 70:
             interpretation += (
-                "🟢 SYMPTÔMES LÉGERS - FONCTIONNEMENT GLOBALEMENT SATISFAISANT\n\n"
+                "SYMPTÔMES LÉGERS - FONCTIONNEMENT GLOBALEMENT SATISFAISANT\n\n"
                 "Quelques symptômes légers OU difficultés légères dans le fonctionnement, "
                 "mais fonctionnement assez bon dans l'ensemble.\n\n"
                 "Signes cliniques typiques:\n"
@@ -583,7 +611,7 @@ class EGF:
             )
         elif score <= 80:
             interpretation += (
-                "✅ SYMPTÔMES TRANSITOIRES - BON FONCTIONNEMENT\n\n"
+                "SYMPTÔMES TRANSITOIRES - BON FONCTIONNEMENT\n\n"
                 "Symptômes transitoires et réactions prévisibles à des facteurs de stress. "
                 "Difficultés légères uniquement.\n\n"
                 "Signes cliniques typiques:\n"
@@ -602,7 +630,7 @@ class EGF:
             )
         elif score <= 90:
             interpretation += (
-                "✅ EXCELLENT FONCTIONNEMENT - SYMPTÔMES ABSENTS OU MINIMES\n\n"
+                "EXCELLENT FONCTIONNEMENT - SYMPTÔMES ABSENTS OU MINIMES\n\n"
                 "Symptômes absents ou minimes (p. ex. anxiété légère avant un examen). "
                 "Fonctionnement satisfaisant dans tous les domaines.\n\n"
                 "Signes cliniques typiques:\n"
@@ -621,7 +649,7 @@ class EGF:
             )
         else:  # score >= 91
             interpretation += (
-                "🌟 FONCTIONNEMENT SUPÉRIEUR - OPTIMAL\n\n"
+                "FONCTIONNEMENT SUPÉRIEUR - OPTIMAL\n\n"
                 "Fonctionnement supérieur dans une grande variété d'activités. Aucun symptôme. "
                 "Recherché par les autres en raison de ses nombreuses qualités positives.\n\n"
                 "Caractéristiques:\n"

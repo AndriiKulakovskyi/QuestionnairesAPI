@@ -110,49 +110,49 @@ class CGI:
             {
                 "id": "cgi01",
                 "section_id": "sec1",
-                "text": "Gravité de la maladie (CGI-S)",
-                "description": "Évaluer la sévérité globale de la maladie au moment actuel",
+                "text": "Gravité de la maladie",
+                "description": "En fonction de votre expérience clinique totale avec ce type de patient, quel est le niveau de gravité des troubles mentaux actuels du patient",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "0 – Non évalué",
+                        "label": "Non évalué",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "1 – Normal, pas du tout malade",
+                        "label": "Normal, pas du tout malade",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "2 – À la limite",
+                        "label": "A la limite",
                         "score": 2
                     },
                     {
                         "code": 3,
-                        "label": "3 – Légèrement malade",
+                        "label": "Légèrement malade",
                         "score": 3
                     },
                     {
                         "code": 4,
-                        "label": "4 – Modérément malade",
+                        "label": "Modérément malade",
                         "score": 4
                     },
                     {
                         "code": 5,
-                        "label": "5 – Manifestement malade",
+                        "label": "Manifestement malade",
                         "score": 5
                     },
                     {
                         "code": 6,
-                        "label": "6 – Gravement malade",
+                        "label": "Gravement malade",
                         "score": 6
                     },
                     {
                         "code": 7,
-                        "label": "7 – Parmi les patients les plus malades",
+                        "label": "Parmi les patients les plus malades",
                         "score": 7
                     }
                 ],
@@ -168,49 +168,49 @@ class CGI:
             {
                 "id": "cgi02",
                 "section_id": "sec1",
-                "text": "Amélioration globale (CGI-I)",
-                "description": "Évaluer le changement total depuis le début du traitement",
+                "text": "Amélioration globale",
+                "description": "Évaluer l'amélioration totale qu'elle soit ou non, selon votre opinion, due entièrement au traitement médicamenteux. Comparé à son état au début du traitement, de quelle façon le patient a-t-il changé",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "0 – Non évalué",
+                        "label": "Non évalué",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "1 – Très fortement amélioré",
+                        "label": "Très fortement amélioré",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "2 – Fortement amélioré",
+                        "label": "Fortement amélioré",
                         "score": 2
                     },
                     {
                         "code": 3,
-                        "label": "3 – Modérément amélioré",
+                        "label": "Légèrement amélioré",
                         "score": 3
                     },
                     {
                         "code": 4,
-                        "label": "4 – Pas de changement",
+                        "label": "Pas de changement",
                         "score": 4
                     },
                     {
                         "code": 5,
-                        "label": "5 – Modérément aggravé",
+                        "label": "Légèrement aggravé",
                         "score": 5
                     },
                     {
                         "code": 6,
-                        "label": "6 – Fortement aggravé",
+                        "label": "Fortement aggravé",
                         "score": 6
                     },
                     {
                         "code": 7,
-                        "label": "7 – Très fortement aggravé",
+                        "label": "Très fortement aggravé",
                         "score": 7
                     }
                 ],
@@ -233,27 +233,27 @@ class CGI:
                 "options": [
                     {
                         "code": 0,
-                        "label": "0 – Non évalué",
+                        "label": "Non évalué",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "1 – Important",
+                        "label": "Important",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "2 – Modéré",
+                        "label": "Modéré",
                         "score": 2
                     },
                     {
                         "code": 3,
-                        "label": "3 – Minime",
+                        "label": "Minime",
                         "score": 3
                     },
                     {
                         "code": 4,
-                        "label": "4 – Nul ou aggravation",
+                        "label": "Nul ou aggravation",
                         "score": 4
                     }
                 ],
@@ -276,27 +276,27 @@ class CGI:
                 "options": [
                     {
                         "code": 0,
-                        "label": "0 – Non évalué",
+                        "label": "Non évalué",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "1 – Aucun",
+                        "label": "Aucun",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "2 – N'interfèrent pas significativement avec le fonctionnement",
+                        "label": "N'interfèrent pas significativement avec le fonctionnement du patient",
                         "score": 2
                     },
                     {
                         "code": 3,
-                        "label": "3 – Interfèrent significativement avec le fonctionnement",
+                        "label": "Interfèrent significativement avec le fonctionnement du patient",
                         "score": 3
                     },
                     {
                         "code": 4,
-                        "label": "4 – Dépassent l'effet thérapeutique",
+                        "label": "Dépassent l'effet thérapeutique",
                         "score": 4
                     }
                 ],
@@ -595,9 +595,9 @@ class CGI:
             0: "Non évalué",
             1: "Très fortement amélioré",
             2: "Fortement amélioré",
-            3: "Modérément amélioré",
+            3: "Légèrement amélioré",
             4: "Pas de changement",
-            5: "Modérément aggravé",
+            5: "Légèrement aggravé",
             6: "Fortement aggravé",
             7: "Très fortement aggravé"
         }
@@ -650,46 +650,46 @@ class CGI:
         interpretation += f"Score: {cgi_s}/7 – {self._get_severity_label(cgi_s)}\n\n"
         
         if cgi_s == 0:
-            interpretation += "❌ La gravité n'a pas été évaluée.\n"
+            interpretation += "La gravité n'a pas été évaluée.\n"
         elif cgi_s == 1:
             interpretation += (
-                "✅ NORMAL – PAS MALADE\n"
+                "Normal – PAS MALADE\n"
                 "Le patient ne présente pas de symptômes de la maladie. "
                 "Fonctionnement normal dans tous les domaines.\n"
             )
         elif cgi_s == 2:
             interpretation += (
-                "⚠️ À LA LIMITE\n"
+                "À LA LIMITE\n"
                 "Le patient présente des symptômes minimes qui peuvent être à la limite "
                 "de la normalité ou du trouble psychiatrique. Surveillance recommandée.\n"
             )
         elif cgi_s == 3:
             interpretation += (
-                "🟡 LÉGÈREMENT MALADE\n"
+                "LÉGÈREMENT MALADE\n"
                 "Le patient présente des symptômes légers mais définitivement présents. "
                 "Impact fonctionnel minimal. Traitement ambulatoire approprié.\n"
             )
         elif cgi_s == 4:
             interpretation += (
-                "🟠 MODÉRÉMENT MALADE\n"
+                "MODÉRÉMENT MALADE\n"
                 "Le patient présente des symptômes d'intensité modérée avec impact "
                 "fonctionnel notable. Traitement actif recommandé.\n"
             )
         elif cgi_s == 5:
             interpretation += (
-                "🔴 MANIFESTEMENT MALADE\n"
+                "MANIFESTEMENT MALADE\n"
                 "Le patient présente des symptômes importants avec altération significative "
                 "du fonctionnement. Traitement intensif nécessaire.\n"
             )
         elif cgi_s == 6:
             interpretation += (
-                "🚨 GRAVEMENT MALADE\n"
+                "GRAVEMENT MALADE\n"
                 "Le patient présente des symptômes sévères avec altération majeure du "
                 "fonctionnement. Considérer intensification du traitement ou hospitalisation.\n"
             )
         elif cgi_s == 7:
             interpretation += (
-                "🆘 EXTRÊMEMENT MALADE\n"
+                "EXTRÊMEMENT MALADE\n"
                 "Le patient fait partie des plus gravement atteints. Symptômes extrêmes "
                 "avec dysfonctionnement majeur. Hospitalisation et traitement intensif "
                 "généralement nécessaires.\n"
@@ -701,10 +701,10 @@ class CGI:
             interpretation += f"Score: {cgi_i}/7 – {self._get_improvement_label(cgi_i)}\n\n"
             
             if cgi_i == 0:
-                interpretation += "❌ L'amélioration n'a pas été évaluée.\n"
+                interpretation += "L'amélioration n'a pas été évaluée.\n"
             elif cgi_i <= 2:
                 interpretation += (
-                    "✅ AMÉLIORATION SIGNIFICATIVE\n"
+                    "AMÉLIORATION SIGNIFICATIVE\n"
                     "Le patient présente une amélioration cliniquement significative par "
                     "rapport à la visite initiale. Le traitement actuel est efficace.\n\n"
                     "Recommandations:\n"
@@ -714,9 +714,9 @@ class CGI:
                 )
             elif cgi_i == 3:
                 interpretation += (
-                    "⚠️ AMÉLIORATION MODÉRÉE\n"
+                    "AMÉLIORATION LÉGÈRE\n"
                     "Le patient présente une certaine amélioration mais celle-ci reste "
-                    "modeste. Le traitement a un effet partiel.\n\n"
+                    "légère. Le traitement a un effet partiel.\n\n"
                     "Recommandations:\n"
                     "• Évaluer si l'amélioration est suffisante\n"
                     "• Considérer optimisation posologique\n"
@@ -724,7 +724,7 @@ class CGI:
                 )
             elif cgi_i == 4:
                 interpretation += (
-                    "➖ PAS DE CHANGEMENT\n"
+                    "PAS DE CHANGEMENT\n"
                     "Le patient ne présente pas d'amélioration ni d'aggravation par "
                     "rapport à la visite initiale. Le traitement actuel est inefficace.\n\n"
                     "Recommandations:\n"
@@ -735,7 +735,7 @@ class CGI:
                 )
             else:  # cgi_i >= 5
                 interpretation += (
-                    "🚨 AGGRAVATION CLINIQUE\n"
+                    "AGGRAVATION CLINIQUE\n"
                     "Le patient présente une aggravation par rapport à la visite initiale. "
                     "Le traitement actuel est inefficace ou délétère.\n\n"
                     "Recommandations URGENTES:\n"
@@ -759,11 +759,11 @@ class CGI:
                 
                 # Interpret therapeutic index
                 if effect == 0 or side_effects == 0:
-                    interpretation += "❌ Index non évalué (effet ou effets secondaires non renseignés).\n"
+                    interpretation += "Index non évalué (effet ou effets secondaires non renseignés).\n"
                 elif therapeutic_index <= 3:
                     # Effect = 1 (major), side effects 1-3
                     interpretation += (
-                        "✅ EXCELLENT RAPPORT BÉNÉFICE/RISQUE\n"
+                        "EXCELLENT RAPPORT BÉNÉFICE/RISQUE\n"
                         "Effet thérapeutique important avec effets secondaires minimes à modérés. "
                         "Le traitement est optimal.\n"
                     )
@@ -771,18 +771,18 @@ class CGI:
                     # Effect = 1, side effects = 4 OR effect = 2, side effects = 0
                     if effect == 1:
                         interpretation += (
-                            "⚠️ ATTENTION: Effet important mais effets secondaires majeurs\n"
+                            "ATTENTION: Effet important mais effets secondaires majeurs\n"
                             "Les effets secondaires dépassent le bénéfice. Ajustement nécessaire.\n"
                         )
                     else:
                         interpretation += (
-                            "✅ BON RAPPORT BÉNÉFICE/RISQUE\n"
+                            "BON RAPPORT BÉNÉFICE/RISQUE\n"
                             "Effet modéré sans effets secondaires.\n"
                         )
                 elif therapeutic_index <= 7:
                     # Effect = 2, side effects 1-3
                     interpretation += (
-                        "🟡 RAPPORT BÉNÉFICE/RISQUE ACCEPTABLE\n"
+                        "RAPPORT BÉNÉFICE/RISQUE ACCEPTABLE\n"
                         "Effet thérapeutique modéré avec effets secondaires variables. "
                         "Optimisation possible.\n"
                     )
@@ -790,19 +790,19 @@ class CGI:
                     # Effect = 2, side effects = 4 OR effect = 3, side effects = 0
                     if effect == 2:
                         interpretation += (
-                            "⚠️ EFFETS SECONDAIRES PROBLÉMATIQUES\n"
+                            "EFFETS SECONDAIRES PROBLÉMATIQUES\n"
                             "Effet modéré mais effets secondaires dépassant le bénéfice. "
                             "Changement de traitement recommandé.\n"
                         )
                     else:
                         interpretation += (
-                            "🟠 EFFET THÉRAPEUTIQUE LIMITÉ\n"
+                            "EFFET THÉRAPEUTIQUE LIMITÉ\n"
                             "Effet minimal sans effets secondaires. Efficacité insuffisante.\n"
                         )
                 elif therapeutic_index <= 11:
                     # Effect = 3, side effects 1-3
                     interpretation += (
-                        "🔴 RAPPORT BÉNÉFICE/RISQUE DÉFAVORABLE\n"
+                        "RAPPORT BÉNÉFICE/RISQUE DÉFAVORABLE\n"
                         "Effet thérapeutique minime avec effets secondaires. "
                         "Changement de traitement fortement recommandé.\n"
                     )
@@ -810,20 +810,20 @@ class CGI:
                     # Effect = 3, side effects = 4 OR effect = 4, side effects = 0
                     if effect == 3:
                         interpretation += (
-                            "🚨 TRAITEMENT INADAPTÉ\n"
+                            "TRAITEMENT INADAPTÉ\n"
                             "Effet minimal et effets secondaires dépassant le bénéfice. "
                             "Arrêt ou changement immédiat nécessaire.\n"
                         )
                     else:
                         interpretation += (
-                            "❌ ABSENCE D'EFFET THÉRAPEUTIQUE\n"
+                            "ABSENCE D'EFFET THÉRAPEUTIQUE\n"
                             "Aucun effet thérapeutique ou aggravation sans effets secondaires. "
                             "Changement de traitement nécessaire.\n"
                         )
                 else:  # therapeutic_index >= 13
                     # Effect = 4, side effects 1-4
                     interpretation += (
-                        "🆘 TRAITEMENT DÉLÉTÈRE\n"
+                        "TRAITEMENT DÉLÉTÈRE\n"
                         "Absence d'effet thérapeutique (ou aggravation) avec effets secondaires. "
                         "ARRÊT IMMÉDIAT du traitement recommandé.\n"
                     )
@@ -864,22 +864,22 @@ class CGI:
             # Follow-up summary
             if cgi_i is not None and cgi_i <= 2 and cgi_s <= 3:
                 interpretation += (
-                    "✅ ÉVOLUTION FAVORABLE\n"
+                    "ÉVOLUTION FAVORABLE\n"
                     "Amélioration significative avec gravité faible. Poursuivre le traitement actuel.\n"
                 )
             elif cgi_i is not None and cgi_i >= 5:
                 interpretation += (
-                    "🚨 ÉVOLUTION DÉFAVORABLE\n"
+                    "ÉVOLUTION DÉFAVORABLE\n"
                     "Aggravation clinique nécessitant modification thérapeutique urgente.\n"
                 )
             elif cgi_s >= 5:
                 interpretation += (
-                    "⚠️ GRAVITÉ PERSISTANTE\n"
+                    "GRAVITÉ PERSISTANTE\n"
                     "Patient toujours gravement atteint. Intensification du traitement à considérer.\n"
                 )
             elif therapeutic_index is not None and therapeutic_index >= 8:
                 interpretation += (
-                    "⚠️ RAPPORT BÉNÉFICE/RISQUE DÉFAVORABLE\n"
+                    "RAPPORT BÉNÉFICE/RISQUE DÉFAVORABLE\n"
                     "Effet thérapeutique insuffisant et/ou effets secondaires importants. "
                     "Modification thérapeutique recommandée.\n"
                 )

@@ -125,60 +125,166 @@ class YMRS:
         Returns:
             List of 11 question dictionaries
         """
-        # Item definitions with max scores
-        items_meta = {
-            1: ("Élévation de l'humeur", 4),
-            2: ("Activité motrice et énergie augmentées", 4),
-            3: ("Intérêt sexuel", 4),
-            4: ("Sommeil", 4),
-            5: ("Irritabilité", 8),
-            6: ("Discours (débit et quantité)", 8),
-            7: ("Langage – troubles de la pensée", 4),
-            8: ("Contenu (idées, thèmes)", 8),
-            9: ("Comportement agressif et perturbateur", 8),
-            10: ("Apparence", 4),
-            11: ("Introspection (insight)", 4)
-        }
-        
-        # Detailed clinical descriptions for each item
-        item_descriptions = {
-            1: "Évaluer l'humeur euphorique, optimiste, ou expansive. 0=Absence; 2=Légèrement ou possiblement augmentée; 4=Manifestement élevée, euphorique.",
-            2: "Évaluer l'augmentation de l'activité motrice, l'agitation, et le niveau d'énergie. 0=Absent; 2=Augmentation subjective; 4=Énergie excessive, hyperactivité motrice presque constante.",
-            3: "Évaluer les pensées sexuelles, préoccupations, ou comportements. 0=Normal; 2=Légèrement augmenté; 4=Contenu sexuel manifeste ou comportement sexuel manifeste.",
-            4: "Évaluer la réduction du besoin de sommeil. 0=Ne rapporte pas de diminution; 2=Dort 1 heure de moins que d'habitude; 4=Nie le besoin de dormir.",
-            5: "Évaluer l'irritabilité et la tendance à la colère (item 0-8). 0=Absent; 2=Subjectivement augmentée; 4=Irritable à certains moments durant l'entretien; 6=Fréquemment irritable; 8=Hostile, non coopératif.",
-            6: "Évaluer le débit et la quantité de parole (item 0-8). 0=Pas d'augmentation; 2=Sent qu'il parle plus; 4=Augmentation notée; 6=Difficile à interrompre, logorrhée; 8=Parle sans interruption, impossible à interrompre.",
-            7: "Évaluer les troubles formels de la pensée (fuite des idées, coq-à-l'âne). 0=Absent; 2=Circonstancialité; 4=Perte des associations, coq-à-l'âne fréquent, désorganisation.",
-            8: "Évaluer le contenu de la pensée: projets grandioses, idées de grandeur, délires (item 0-8). 0=Normal; 2=Nouveaux intérêts, projets compatibles; 4=Projets spéciaux, hyperreligieux; 6=Idées de grandeur ou persécution, idées de référence; 8=Délires, hallucinations.",
-            9: "Évaluer le comportement agressif, perturbateur ou destructeur (item 0-8). 0=Absent, coopératif; 2=Sarcastique, bruyant par moments; 4=Exigeant, menaces; 6=Menace l'examinateur, cris; 8=Agressif physiquement, destructeur.",
-            10: "Évaluer la tenue vestimentaire et le soin corporel. 0=Habillé et soigné de façon appropriée; 2=Minime inattention; 4=Négligé, en partie habillé, maquillage criard.",
-            11: "Évaluer la conscience de la maladie et le besoin de traitement. 0=Conscience; 2=Reconnaît possible trouble; 4=Nie totalement la maladie."
-        }
+        # Complete item definitions with French text
+        items = [
+            {
+                "id": "q1",
+                "title": "Elévation de l'humeur",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Absente"},
+                    {"code": 1, "label": "Légèrement ou possiblement élevée lorsqu'on l'interroge"},
+                    {"code": 2, "label": "Elévation subjective nette ; optimiste, plein d'assurance ; gai ; contenu approprié"},
+                    {"code": 3, "label": "Elevée, au contenu approprié, plaisantin"},
+                    {"code": 4, "label": "Euphorique ; rires inappropriés ; chante"}
+                ]
+            },
+            {
+                "id": "q2",
+                "title": "Activité motrice et énergie augmentées",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Absentes"},
+                    {"code": 1, "label": "Subjectivement élevées"},
+                    {"code": 2, "label": "Animé ; expression gestuelle plus élevée"},
+                    {"code": 3, "label": "Energie excessive ; parfois hyperactif ; agité (peut être calmé)"},
+                    {"code": 4, "label": "Excitation motrice ; hyperactivité continuelle (ne peut être calmé)"}
+                ]
+            },
+            {
+                "id": "q3",
+                "title": "Intérêt sexuel",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Normal, non augmenté"},
+                    {"code": 1, "label": "Augmentation légère ou possible"},
+                    {"code": 2, "label": "Clairement augmenté lorsqu'on l'interroge"},
+                    {"code": 3, "label": "Parle spontanément de la sexualité ; élabore sur des thèmes sexuels ; se décrit comme étant hyper sexuel"},
+                    {"code": 4, "label": "Agissements sexuels manifestes (envers les patients, les membres de l'équipe, ou l'évaluateur)"}
+                ]
+            },
+            {
+                "id": "q4",
+                "title": "Sommeil",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Ne rapporte pas de diminution de sommeil"},
+                    {"code": 1, "label": "Dort jusqu'à une heure de moins que d'habitude"},
+                    {"code": 2, "label": "Sommeil réduit de plus d'une heure par rapport à d'habitude"},
+                    {"code": 3, "label": "Rapporte un moins grand besoin de sommeil"},
+                    {"code": 4, "label": "Nie le besoin de sommeil"}
+                ]
+            },
+            {
+                "id": "q5",
+                "title": "Irritabilité",
+                "max_value": 8,
+                "options": [
+                    {"code": 0, "label": "Absente"},
+                    {"code": 2, "label": "Subjectivement augmentée"},
+                    {"code": 4, "label": "Irritable par moment durant l'entretien ; épisodes récents d'énervement ou de colère dans le service"},
+                    {"code": 6, "label": "Fréquemment irritable durant l'entretien ; brusque ; abrupt"},
+                    {"code": 8, "label": "Hostile, non coopératif ; évaluation impossible"}
+                ]
+            },
+            {
+                "id": "q6",
+                "title": "Discours (débit et quantité)",
+                "max_value": 8,
+                "options": [
+                    {"code": 0, "label": "Pas augmenté"},
+                    {"code": 2, "label": "Se sent bavard"},
+                    {"code": 4, "label": "Augmentation du débit et de la quantité par moment ; prolixe par moment"},
+                    {"code": 6, "label": "Soutenu ; augmentation consistante du débit ou de la quantité ; difficile à interrompre"},
+                    {"code": 8, "label": "Sous pression ; impossible à interrompre ; discours continu"}
+                ]
+            },
+            {
+                "id": "q7",
+                "title": "Langage - troubles de la pensée",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Absent"},
+                    {"code": 1, "label": "Circonstanciel ; légère distractivité ; pensées rapides"},
+                    {"code": 2, "label": "Distractivité ; perd le fil de ses idées ; change fréquemment de sujet ; pensées accélérées"},
+                    {"code": 3, "label": "Fuite des idées ; réponses hors sujet ; difficile à suivre ; fait des rimes ; écholalie"},
+                    {"code": 4, "label": "Incohérent ; communication impossible"}
+                ]
+            },
+            {
+                "id": "q8",
+                "title": "Contenu",
+                "max_value": 8,
+                "options": [
+                    {"code": 0, "label": "Normal"},
+                    {"code": 2, "label": "Projets discutables ; intérêts nouveaux"},
+                    {"code": 4, "label": "Projet(s) particulier(s) ; hyper religieux"},
+                    {"code": 6, "label": "Idées de grandeur ou de persécution ; idées de référence"},
+                    {"code": 8, "label": "délires ; hallucinations"}
+                ]
+            },
+            {
+                "id": "q9",
+                "title": "Comportement agressif et perturbateur",
+                "max_value": 8,
+                "options": [
+                    {"code": 0, "label": "Absent, coopératif"},
+                    {"code": 2, "label": "Sarcastique ; parle fort par moment, sur la défensive"},
+                    {"code": 4, "label": "Exigeant ; fait des menaces dans le service"},
+                    {"code": 6, "label": "Menace l'évaluateur ; crie ; évaluation difficile"},
+                    {"code": 8, "label": "Agressif physiquement ; destructeur ; évaluation impossible"}
+                ]
+            },
+            {
+                "id": "q10",
+                "title": "Apparence",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Soignée et habillement adéquat"},
+                    {"code": 1, "label": "Légèrement négligé"},
+                    {"code": 2, "label": "Peu soigné ; modérément débraillé ; trop habillé"},
+                    {"code": 3, "label": "Débraillé ; à moitié nu ; maquillage criard"},
+                    {"code": 4, "label": "Complètement négligé ; orné ; accoutrement bizarre"}
+                ]
+            },
+            {
+                "id": "q11",
+                "title": "Introspection",
+                "max_value": 4,
+                "options": [
+                    {"code": 0, "label": "Présente ; admet être malade ; reconnaît le besoin de traitement"},
+                    {"code": 1, "label": "Eventuellement malade"},
+                    {"code": 2, "label": "Admet des changements de comportement, mais nie la maladie"},
+                    {"code": 3, "label": "Admet de possibles changements de comportement, mais nie la maladie"},
+                    {"code": 4, "label": "Nie tout changement de comportement"}
+                ]
+            }
+        ]
         
         questions = []
         
-        for i in range(1, 12):
-            label, max_value = items_meta[i]
-            description = item_descriptions.get(i, "")
-            
-            # Generate options based on max_value
-            options = [{"code": j, "label": str(j), "score": j} for j in range(max_value + 1)]
-            
+        for i, item in enumerate(items, 1):
             questions.append({
-                "id": f"q{i}",
+                "id": item["id"],
                 "section_id": "sec_items",
-                "text": f"{i}. {label}",
-                "description": description,
-                "type": "integer",
+                "text": f"{i}. {item['title']}",
+                "type": "single_choice",
                 "required": True,
-                "options": options,
+                "options": [
+                    {
+                        "code": opt["code"],
+                        "label": opt["label"],
+                        "score": opt["code"]
+                    }
+                    for opt in item["options"]
+                ],
                 "constraints": {
                     "value_type": "integer",
                     "min_value": 0,
-                    "max_value": max_value,
-                    "allowed_values": list(range(max_value + 1))
+                    "max_value": item["max_value"],
+                    "allowed_values": [opt["code"] for opt in item["options"]]
                 },
-                "rating_note": f"Coté de 0 à {max_value}" + (" (item à double poids)" if max_value == 8 else "")
+                "rating_note": f"Coté de 0 à {item['max_value']}" + (" (item à double poids)" if item['max_value'] == 8 else "")
             })
         
         return questions
