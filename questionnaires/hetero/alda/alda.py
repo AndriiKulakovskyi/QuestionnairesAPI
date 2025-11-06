@@ -112,23 +112,23 @@ class ALDA:
             {
                 "id": "B1",
                 "section_id": "B",
-                "text": "Fréquence/présentation des épisodes avant traitement",
+                "text": "Nombre d'épisodes avant le traitement",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "Forte relation au traitement (peu d'épisodes/rémissions spontanées peu probables)",
+                        "label": "4 épisodes ou plus",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "Relation intermédiaire",
+                        "label": "2 ou 3 épisodes",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "Relation faible (épisodes fréquents/cycles rapides ou rémissions spontanées probables)",
+                        "label": "1 épisode",
                         "score": 2
                     }
                 ],
@@ -140,23 +140,23 @@ class ALDA:
             {
                 "id": "B2",
                 "section_id": "B",
-                "text": "Durée d'observation sous traitement",
+                "text": "Fréquence des épisodes avant le traitement",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "≥ 2 ans",
+                        "label": "Moyenne à élevée, incluant les cycles rapides",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "≈ 1–2 ans",
+                        "label": "Faible, rémissions spontanées de 3 ans ou plus en moyenne",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "< 1 an",
+                        "label": "1 seul épisode, risque de récurrence ne peut être établi",
                         "score": 2
                     }
                 ],
@@ -168,23 +168,23 @@ class ALDA:
             {
                 "id": "B3",
                 "section_id": "B",
-                "text": "Compliance durant la/les période(s) de stabilité",
+                "text": "Durée du traitement",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "Excellente (doses/taux thérapeutiques documentés)",
+                        "label": "2 ans ou plus",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "Intermédiaire/partielle",
+                        "label": "1-2 ans",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "Faible (<80% prises/taux)",
+                        "label": "moins d'un an",
                         "score": 2
                     }
                 ],
@@ -196,23 +196,23 @@ class ALDA:
             {
                 "id": "B4",
                 "section_id": "B",
-                "text": "Usage de médication additionnelle durant la phase de stabilité",
+                "text": "Compliance durant la/les période(s) de stabilité",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "Aucun adjuvant",
+                        "label": "Excellente, documentée par des taux dans les limites thérapeutiques",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "Adjuvants limités",
+                        "label": "Bonne, plus de 80% des taux dans les limites thérapeutiques",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "Adjuvants importants/systématiques",
+                        "label": "Pauvre, répétitivement hors traitements, moins de 80% des taux dans les limites thérapeutiques",
                         "score": 2
                     }
                 ],
@@ -224,23 +224,23 @@ class ALDA:
             {
                 "id": "B5",
                 "section_id": "B",
-                "text": "Symptômes résiduels/épisodes sous traitement adéquat",
+                "text": "Usage de médication additionnelle durant la phase de stabilité",
                 "type": "single_choice",
                 "required": True,
                 "options": [
                     {
                         "code": 0,
-                        "label": "Aucun symptôme/épisode",
+                        "label": "Aucun hormis de rares somnifères (1 par semaine ou moins); pas d'autres stabilisateurs pour contrôler les symptômes thymiques",
                         "score": 0
                     },
                     {
                         "code": 1,
-                        "label": "Occasionnels",
+                        "label": "Antidépresseurs ou antipsychotiques à faible dose comme une sécurité, ou recours prolongé à des somnifères",
                         "score": 1
                     },
                     {
                         "code": 2,
-                        "label": "Fréquents",
+                        "label": "Usage prolongé ou systématique d'un antidépresseur ou antipsychotique",
                         "score": 2
                     }
                 ],
@@ -333,16 +333,29 @@ class ALDA:
                     "Considérer ajustement thérapeutique ou changement de traitement."
                 )
             
-            # Warning if short observation period
-            if answers.get("B2", 0) == 2:
-                warnings.append(
-                    "Durée d'observation < 1 an. L'évaluation de la réponse peut être prématurée."
-                )
-            
-            # Warning if poor compliance
+            # Warning if short treatment duration (B3)
             if answers.get("B3", 0) == 2:
                 warnings.append(
+                    "Durée de traitement < 1 an. L'évaluation de la réponse peut être prématurée."
+                )
+            
+            # Warning if poor compliance (B4)
+            if answers.get("B4", 0) == 2:
+                warnings.append(
                     "Compliance faible. La non-réponse peut être liée à une prise inadéquate du traitement."
+                )
+            
+            # Warning if single episode only (B1)
+            if answers.get("B1", 0) == 2:
+                warnings.append(
+                    "Un seul épisode avant traitement. Difficile d'établir le pattern de récurrence."
+                )
+            
+            # Warning if low frequency with spontaneous remissions (B2)
+            if answers.get("B2", 0) >= 1:
+                warnings.append(
+                    "Fréquence faible d'épisodes ou rémissions spontanées possibles. "
+                    "Réduit la certitude d'attribution de l'amélioration au traitement."
                 )
         
         return {
@@ -457,11 +470,11 @@ class ALDA:
     def _get_b_item_description(self, item: str) -> str:
         """Get short description for criterion B item."""
         descriptions = {
-            "B1": "Fréquence épisodes avant traitement",
-            "B2": "Durée d'observation",
-            "B3": "Compliance",
-            "B4": "Médications additionnelles",
-            "B5": "Symptômes résiduels"
+            "B1": "Nombre d'épisodes avant traitement",
+            "B2": "Fréquence épisodes avant traitement",
+            "B3": "Durée du traitement",
+            "B4": "Compliance",
+            "B5": "Médications additionnelles"
         }
         return descriptions.get(item, "")
     
@@ -601,60 +614,60 @@ class ALDA:
         # Detailed B items analysis
         interpretation += "\nDétail des facteurs confondants:\n"
         
-        # B1: Episode frequency
+        # B1: Number of episodes before treatment
         b1 = answers.get("B1", 0)
-        interpretation += f"\n• B1 - Fréquence épisodes avant traitement: {b1}/2\n"
+        interpretation += f"\n• B1 - Nombre d'épisodes avant traitement: {b1}/2\n"
         if b1 == 0:
-            interpretation += "  Peu d'épisodes; rémissions spontanées peu probables → Favorise attribution au traitement\n"
+            interpretation += "  4 épisodes ou plus → Historique robuste, récurrence bien établie\n"
         elif b1 == 1:
-            interpretation += "  Présentation intermédiaire\n"
+            interpretation += "  2 ou 3 épisodes → Historique modéré\n"
         else:
-            interpretation += "  ⚠️ Cycles rapides ou rémissions spontanées probables → Réduit certitude\n"
+            interpretation += "  ⚠️ 1 seul épisode → Difficile d'établir le pattern de récurrence\n"
         
-        # B2: Observation duration
+        # B2: Episode frequency before treatment
         b2 = answers.get("B2", 0)
-        interpretation += f"\n• B2 - Durée d'observation: {b2}/2\n"
+        interpretation += f"\n• B2 - Fréquence des épisodes avant traitement: {b2}/2\n"
         if b2 == 0:
-            interpretation += "  ≥ 2 ans → Durée optimale pour évaluer la réponse\n"
+            interpretation += "  Moyenne à élevée (incluant cycles rapides) → Amélioration attribuable au traitement\n"
         elif b2 == 1:
+            interpretation += "  ⚠️ Faible avec rémissions spontanées (≥3 ans) → Réduit certitude d'attribution\n"
+        else:
+            interpretation += "  ⚠️ 1 seul épisode → Risque de récurrence non établi\n"
+        
+        # B3: Treatment duration
+        b3 = answers.get("B3", 0)
+        interpretation += f"\n• B3 - Durée du traitement: {b3}/2\n"
+        if b3 == 0:
+            interpretation += "  2 ans ou plus → Durée optimale pour évaluer la réponse\n"
+        elif b3 == 1:
             interpretation += "  1-2 ans → Durée acceptable mais limite\n"
         else:
-            interpretation += "  ⚠️ < 1 an → Durée insuffisante; évaluation prématurée\n"
+            interpretation += "  ⚠️ Moins d'un an → Durée insuffisante; évaluation prématurée\n"
         
-        # B3: Compliance
-        b3 = answers.get("B3", 0)
-        interpretation += f"\n• B3 - Compliance: {b3}/2\n"
-        if b3 == 0:
-            interpretation += "  Excellente avec documentation → Certitude maximale d'exposition au traitement\n"
-        elif b3 == 1:
-            interpretation += "  Intermédiaire/partielle → Observance sous-optimale\n"
-        else:
-            interpretation += "  ⚠️ Faible (<80%) → Impossibilité de conclure sur l'efficacité du traitement\n"
-        
-        # B4: Additional medications
+        # B4: Compliance
         b4 = answers.get("B4", 0)
-        interpretation += f"\n• B4 - Médications additionnelles: {b4}/2\n"
+        interpretation += f"\n• B4 - Compliance: {b4}/2\n"
         if b4 == 0:
-            interpretation += "  Aucun adjuvant → Amélioration attribuable au seul thymorégulateur\n"
+            interpretation += "  Excellente, documentée par des taux thérapeutiques → Certitude maximale\n"
         elif b4 == 1:
-            interpretation += "  Adjuvants limités → Contribution du thymorégulateur reste principale\n"
+            interpretation += "  Bonne (>80% des taux dans limites) → Observance acceptable\n"
         else:
-            interpretation += "  ⚠️ Adjuvants importants → Difficile d'isoler effet du thymorégulateur\n"
+            interpretation += "  ⚠️ Pauvre (<80% des taux) → Impossibilité de conclure sur l'efficacité\n"
         
-        # B5: Residual symptoms
+        # B5: Additional medications
         b5 = answers.get("B5", 0)
-        interpretation += f"\n• B5 - Symptômes résiduels: {b5}/2\n"
+        interpretation += f"\n• B5 - Médications additionnelles: {b5}/2\n"
         if b5 == 0:
-            interpretation += "  Aucun → Rémission complète sous traitement\n"
+            interpretation += "  Aucun (sauf rares somnifères) → Amélioration attribuable au traitement principal\n"
         elif b5 == 1:
-            interpretation += "  Occasionnels → Réponse partielle avec rechutes limitées\n"
+            interpretation += "  Antidépresseurs/antipsychotiques à faible dose → Contribution mixte\n"
         else:
-            interpretation += "  ⚠️ Fréquents → Efficacité limitée du traitement actuel\n"
+            interpretation += "  ⚠️ Usage prolongé/systématique d'adjuvants → Difficile d'isoler l'effet\n"
         
         # Clinical recommendations based on specific factors
         interpretation += "\n=== RECOMMANDATIONS SPÉCIFIQUES ===\n"
         
-        if b3 >= 1:
+        if b4 >= 1:
             interpretation += (
                 "• COMPLIANCE: Renforcer l'observance thérapeutique\n"
                 "  - Éducation thérapeutique\n"
@@ -662,26 +675,26 @@ class ALDA:
                 "  - Évaluer les barrières à l'observance (effets secondaires, insight)\n"
             )
         
-        if b2 >= 1:
+        if b3 >= 1:
             interpretation += (
-                "• DURÉE D'OBSERVATION: Poursuivre le suivi\n"
+                "• DURÉE DE TRAITEMENT: Poursuivre le suivi\n"
                 "  - Réévaluation à distance pour confirmer la stabilité\n"
                 "  - Documentation longitudinale des épisodes\n"
             )
         
-        if b4 >= 1:
+        if b5 >= 1:
             interpretation += (
                 "• POLYPHARMACIE: Évaluer la contribution de chaque traitement\n"
                 "  - Tenter simplification si possible\n"
                 "  - Identifier le(s) traitement(s) essentiel(s)\n"
             )
         
-        if b5 >= 1:
+        if b2 >= 1:
             interpretation += (
-                "• SYMPTÔMES RÉSIDUELS: Optimisation thérapeutique\n"
-                "  - Ajustement posologique\n"
-                "  - Considérer traitements adjuvants ciblés\n"
-                "  - Interventions psychothérapeutiques (TCC, psychoéducation)\n"
+                "• FRÉQUENCE DES ÉPISODES: Évaluation approfondie\n"
+                "  - Documenter les rémissions spontanées antérieures\n"
+                "  - Considérer l'histoire naturelle du trouble\n"
+                "  - Prolonger la surveillance pour mieux établir le pattern\n"
             )
         
         # Summary and conclusion
