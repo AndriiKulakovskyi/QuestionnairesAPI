@@ -55,13 +55,13 @@ class FAST:
             "max_score": 12
         },
         "profession": {
-            "name": "Activité professionnelle",
+            "name": "Activité Professionnelle",
             "name_en": "Work/Occupation",
             "items": list(range(5, 10)),  # q5-q9
             "max_score": 15
         },
         "cognition": {
-            "name": "Fonctionnement cognitif",
+            "name": "Fonctionnement Cognitif",
             "name_en": "Cognitive functioning",
             "items": list(range(10, 15)),  # q10-q14
             "max_score": 15
@@ -73,7 +73,7 @@ class FAST:
             "max_score": 6
         },
         "relations": {
-            "name": "Relations interpersonnelles",
+            "name": "Relations Interpersonnelles",
             "name_en": "Interpersonal relations",
             "items": list(range(17, 23)),  # q17-q22
             "max_score": 18
@@ -433,13 +433,13 @@ class FAST:
         # Overall interpretation
         if total_score == 0:
             interpretation += (
-                "✅ AUCUNE ALTÉRATION FONCTIONNELLE\n"
+                "AUCUNE ALTÉRATION FONCTIONNELLE\n"
                 "Le patient ne rapporte aucune difficulté dans les domaines évalués. "
                 "Fonctionnement optimal dans toutes les sphères de vie.\n"
             )
         elif total_score < self.CUTOFF_MODERATE_IMPAIRMENT:
             interpretation += (
-                "🟢 ALTÉRATION FONCTIONNELLE LÉGÈRE\n"
+                "ALTÉRATION FONCTIONNELLE LÉGÈRE\n"
                 f"Score total: {total_score}/72\n\n"
                 "Le patient présente des difficultés mineures qui n'entravent pas "
                 "significativement le fonctionnement global. Les capacités adaptatives "
@@ -452,7 +452,7 @@ class FAST:
             )
         elif total_score < self.CUTOFF_SEVERE_IMPAIRMENT:
             interpretation += (
-                "🟡 ALTÉRATION FONCTIONNELLE MODÉRÉE\n"
+                "ALTÉRATION FONCTIONNELLE MODÉRÉE\n"
                 f"Score total: {total_score}/72\n\n"
                 "Le patient présente des difficultés significatives qui affectent "
                 "le fonctionnement quotidien dans un ou plusieurs domaines. "
@@ -467,7 +467,7 @@ class FAST:
             )
         else:
             interpretation += (
-                "🔴 ALTÉRATION FONCTIONNELLE SÉVÈRE\n"
+                "ALTÉRATION FONCTIONNELLE SÉVÈRE\n"
                 f"Score total: {total_score}/72\n\n"
                 "Le patient présente des déficits fonctionnels marqués dans plusieurs "
                 "domaines de vie. Impact majeur sur l'autonomie et la qualité de vie. "
@@ -532,7 +532,7 @@ class FAST:
         
         if cognition_severe:
             interpretation += (
-                "\n⚠️ DÉFICITS COGNITIFS MARQUÉS\n"
+                "\nDÉFICITS COGNITIFS MARQUÉS\n"
                 "Altération importante des fonctions cognitives (concentration, mémoire, "
                 "résolution de problèmes). Considérer:\n"
                 "• Évaluation neuropsychologique complète\n"
@@ -543,7 +543,7 @@ class FAST:
         
         if work_severe:
             interpretation += (
-                "\n⚠️ ALTÉRATION PROFESSIONNELLE SÉVÈRE\n"
+                "\nALTÉRATION PROFESSIONNELLE SÉVÈRE\n"
                 "Impact majeur sur la capacité de travail. Considérer:\n"
                 "• Évaluation des capacités de travail\n"
                 "• Aménagement de poste ou temps partiel thérapeutique\n"
@@ -554,7 +554,7 @@ class FAST:
         
         if relations_severe:
             interpretation += (
-                "\n⚠️ DIFFICULTÉS RELATIONNELLES IMPORTANTES\n"
+                "\nDIFFICULTÉS RELATIONNELLES IMPORTANTES\n"
                 "Altération marquée des relations interpersonnelles. Considérer:\n"
                 "• Thérapie interpersonnelle\n"
                 "• Groupes de compétences sociales\n"
@@ -564,7 +564,7 @@ class FAST:
         
         if autonomy_severe:
             interpretation += (
-                "\n⚠️ AUTONOMIE COMPROMISE\n"
+                "\nAUTONOMIE COMPROMISE\n"
                 "Difficultés dans les activités de vie quotidienne. Considérer:\n"
                 "• Ergothérapie\n"
                 "• Aide à domicile\n"
@@ -580,12 +580,12 @@ class FAST:
         if abs(cognitive_vs_others) > 30:
             if cognitive_vs_others > 30:
                 interpretation += (
-                    "\n📊 PROFIL: Déficits cognitifs disproportionnés par rapport aux autres domaines. "
+                    "\nPROFIL: Déficits cognitifs disproportionnés par rapport aux autres domaines. "
                     "Suggère possible contribution neurocognitive primaire.\n"
                 )
             else:
                 interpretation += (
-                    "\n📊 PROFIL: Cognition relativement préservée malgré altérations dans autres domaines. "
+                    "\nPROFIL: Cognition relativement préservée malgré altérations dans autres domaines. "
                     "Les difficultés fonctionnelles peuvent être plus liées à facteurs motivationnels, "
                     "sociaux ou symptomatiques qu'à déficits cognitifs.\n"
                 )
@@ -636,7 +636,7 @@ class FAST:
         if domain_id == "autonomie":
             if percentage > 75:
                 interpretation += (
-                    "⚠️ Altération sévère de l'autonomie. Difficultés majeures dans les activités "
+                    "Altération sévère de l'autonomie. Difficultés majeures dans les activités "
                     "de vie quotidienne. Support intensif et évaluation ergothérapique nécessaires.\n"
                 )
             elif percentage > 50:
@@ -650,7 +650,7 @@ class FAST:
         elif domain_id == "profession":
             if percentage > 75:
                 interpretation += (
-                    "⚠️ Impact professionnel majeur. Capacité de travail sévèrement compromise. "
+                    "Impact professionnel majeur. Capacité de travail sévèrement compromise. "
                     "Évaluation des capacités et réorientation possiblement nécessaires.\n"
                 )
             elif percentage > 50:
@@ -664,7 +664,7 @@ class FAST:
         elif domain_id == "cognition":
             if percentage > 75:
                 interpretation += (
-                    "⚠️ Déficits cognitifs sévères. Évaluation neuropsychologique et "
+                    "Déficits cognitifs sévères. Évaluation neuropsychologique et "
                     "remédiation cognitive fortement recommandées.\n"
                 )
             elif percentage > 50:
@@ -678,7 +678,7 @@ class FAST:
         elif domain_id == "finances":
             if score >= 5:
                 interpretation += (
-                    "⚠️ Gestion financière très problématique. Évaluation pour mesures "
+                    "Gestion financière très problématique. Évaluation pour mesures "
                     "de protection (curatelle/tutelle) à considérer.\n"
                 )
             elif score >= 3:
@@ -692,7 +692,7 @@ class FAST:
         elif domain_id == "relations":
             if percentage > 75:
                 interpretation += (
-                    "⚠️ Isolement social majeur et/ou conflits relationnels sévères. "
+                    "Isolement social majeur et/ou conflits relationnels sévères. "
                     "Interventions sociales et thérapie interpersonnelle prioritaires.\n"
                 )
             elif percentage > 50:
@@ -706,7 +706,7 @@ class FAST:
         elif domain_id == "loisirs":
             if score >= 5:
                 interpretation += (
-                    "⚠️ Absence quasi-totale d'activités de loisirs. Risque de désinvestissement "
+                    "Absence quasi-totale d'activités de loisirs. Risque de désinvestissement "
                     "et isolement. Activation comportementale recommandée.\n"
                 )
             elif score >= 3:

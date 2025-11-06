@@ -88,14 +88,15 @@ export default function QuestionnairePage() {
       }
     }
 
-    // Filter visible questions based on demographics (if applicable)
+    // Filter visible questions based on demographics AND answers (for conditional logic)
+    const context = { ...demographics, answers };
     const visibleQuestions = questionnaire.questions.filter((q) =>
-      shouldDisplayQuestion(q, demographics)
+      shouldDisplayQuestion(q, context)
     );
 
     // Check if all required visible questions are answered
     const requiredQuestions = visibleQuestions.filter((q) =>
-      isQuestionRequired(q, demographics)
+      isQuestionRequired(q, context)
     );
     const missingAnswers = requiredQuestions.filter((q) => !(q.id in answers));
     
@@ -192,15 +193,17 @@ export default function QuestionnairePage() {
     );
   }
 
-  // Filter visible questions based on demographics
+  // Filter visible questions based on demographics AND answers (for conditional logic)
+  // Combine demographics and answers into a single context object
+  const context = { ...demographics, answers };
   const visibleQuestions = questionnaire.questions.filter((q) =>
-    shouldDisplayQuestion(q, demographics)
+    shouldDisplayQuestion(q, context)
   );
 
   // Show questionnaire form
   const answeredCount = Object.keys(answers).length;
   const visibleRequiredQuestions = visibleQuestions.filter((q) =>
-    isQuestionRequired(q, demographics)
+    isQuestionRequired(q, context)
   );
   const totalRequired = visibleRequiredQuestions.length;
   const progress = totalRequired > 0 ? (answeredCount / totalRequired) * 100 : 0;
@@ -333,6 +336,31 @@ export default function QuestionnairePage() {
               return null;
             }
 
+            // Build parent-child map for conditional questions
+            const parentChildMap = new Map<string, string[]>();
+            const childQuestions = new Set<string>();
+            
+            sectionQuestions.forEach((q) => {
+              if (q.display_if && typeof q.display_if === 'object') {
+                // Extract parent question ID from display_if
+                // Format: {"==": [{"var": "answers.parent_id"}, value]}
+                const varPath = q.display_if['==']?.[0]?.var;
+                if (varPath && varPath.startsWith('answers.')) {
+                  const parentId = varPath.replace('answers.', '');
+                  if (!parentChildMap.has(parentId)) {
+                    parentChildMap.set(parentId, []);
+                  }
+                  parentChildMap.get(parentId)!.push(q.id);
+                  childQuestions.add(q.id);
+                }
+              }
+            });
+
+            // Get top-level questions (not conditional sub-questions)
+            const topLevelQuestions = sectionQuestions.filter(
+              (q) => !childQuestions.has(q.id)
+            );
+
             return (
               <div key={section.id} className="mb-10">
                 <div className="mb-6">
@@ -344,14 +372,37 @@ export default function QuestionnairePage() {
                   )}
                 </div>
 
-                {sectionQuestions.map((question) => (
-                  <Question
-                    key={question.id}
-                    question={question}
-                    value={answers[question.id]}
-                    onChange={handleAnswerChange}
-                  />
-                ))}
+                {topLevelQuestions.map((question) => {
+                  const children = parentChildMap.get(question.id) || [];
+                  const childQuestionsData = children
+                    .map(childId => sectionQuestions.find(q => q.id === childId))
+                    .filter((q): q is typeof question => q !== undefined);
+
+                  return (
+                    <div key={question.id}>
+                      {/* Parent Question */}
+                      <Question
+                        question={question}
+                        value={answers[question.id]}
+                        onChange={handleAnswerChange}
+                      />
+                      
+                      {/* Conditional Sub-Questions (indented) */}
+                      {childQuestionsData.length > 0 && (
+                        <div className="ml-8 mt-2 border-l-2 border-gray-700 pl-6">
+                          {childQuestionsData.map((childQuestion) => (
+                            <Question
+                              key={childQuestion.id}
+                              question={childQuestion}
+                              value={answers[childQuestion.id]}
+                              onChange={handleAnswerChange}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             );
           })}

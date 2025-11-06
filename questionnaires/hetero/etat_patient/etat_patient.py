@@ -145,13 +145,17 @@ class EtatPatient:
         questions = []
         
         # Helper function to create tri-state question
-        def create_question(qid: str, section: str, text: str, visibility_rule: Optional[str] = None) -> Dict[str, Any]:
+        def create_question(qid: str, section: str, text: str, display_if: Optional[Dict[str, Any]] = None, description: Optional[str] = None) -> Dict[str, Any]:
+            # Main questions (without display_if) are always required
+            # Conditional sub-questions (with display_if) are required only when visible
+            is_conditional = display_if is not None
+            
             q = {
                 "id": qid,
                 "section_id": section,
                 "text": text,
                 "type": "single_choice",
-                "required": False,
+                "required": not is_conditional,  # Main questions = required, sub-questions = not required by default
                 "options": [
                     {"code": 1, "label": "oui", "score": 1},
                     {"code": 0, "label": "non", "score": 0},
@@ -162,49 +166,58 @@ class EtatPatient:
                     "allowed_values": [0, 1, 9]
                 }
             }
-            if visibility_rule:
-                q["visibility"] = {"rule": visibility_rule}
+            if description:
+                q["description"] = description
+            if display_if:
+                q["display_if"] = display_if
+                # Conditional questions are required only when visible (when display_if evaluates to true)
+                q["required_if"] = display_if
             return q
         
-        # Depressive symptoms - Main items
-        depressive_main = [
-            ("dep_mood", "Humeur dépressive la majeure partie de la journée"),
-            ("dep_anhedonia", "Diminution marquée d'intérêt ou de plaisir (presque toute la journée)"),
-            ("dep_weight_appetite", "Perte/Gain de poids significatif ou appétit diminué/augmenté"),
-            ("dep_sleep", "Insomnie ou hypersomnie"),
-            ("dep_psychomotor", "Agitation ou ralentissement psychomoteur"),
-            ("dep_fatigue", "Fatigue ou perte d'énergie"),
-            ("dep_guilt", "Dévalorisation / culpabilité excessive ou inappropriée"),
-            ("dep_concentration", "Diminution de l'aptitude à penser/se concentrer ou indécision chaque jour"),
-            ("dep_suicide", "Pensées de mort / idéation suicidaire / tentative / plan")
-        ]
+        # Depressive symptoms - Main items with descriptions for those with conditional sub-items
+        questions.append(create_question("dep_mood", "depression", "Humeur dépressive la majeure partie de la journée", description="Si OUI alors compléter :"))
+        questions.append(create_question("dep_anhedonia", "depression", "Diminution marquée d'intérêt ou de plaisir dans toutes ou presque les activités habituelles, presque toute la journée"))
+        questions.append(create_question("dep_weight_appetite", "depression", "Perte ou gain de poids significatif, ou diminution ou augmentation de l'appétit", description="Si OUI alors compléter :"))
+        questions.append(create_question("dep_sleep", "depression", "Insomnie ou hypersomnie", description="Si OUI alors compléter :"))
+        questions.append(create_question("dep_psychomotor", "depression", "Agitation ou ralentissement psychomoteur", description="Si OUI alors compléter :"))
+        questions.append(create_question("dep_fatigue", "depression", "Fatigue ou perte d'énergie"))
+        questions.append(create_question("dep_guilt", "depression", "Sentiment de dévalorisation ou de culpabilité excessive ou inappropriée"))
+        questions.append(create_question("dep_concentration", "depression", "Diminution de l'aptitude à penser ou se concentrer ou indécision chaque jour", description="Si OUI alors compléter :"))
+        questions.append(create_question("dep_suicide", "depression", "Pensées récurrentes de mort, idéation suicidaire récurrente sans plan spécifique, ou tentative de suicide ou plan précis pour se suicider"))
         
-        for qid, text in depressive_main:
-            questions.append(create_question(qid, "depression", text))
-        
-        # Depressive symptoms - Conditional sub-items
-        questions.append(create_question("dep_hyperreact", "depression", "Hyper‑réactivité émotionnelle", "dep_mood == 1"))
-        questions.append(create_question("dep_hyporeact", "depression", "Hypo‑réactivité / anesthésie", "dep_mood == 1"))
-        questions.append(create_question("dep_weight_loss", "depression", "Perte de poids", "dep_weight_appetite == 1"))
-        questions.append(create_question("dep_weight_gain", "depression", "Gain de poids", "dep_weight_appetite == 1"))
-        questions.append(create_question("dep_insomnia", "depression", "Insomnie", "dep_sleep == 1"))
-        questions.append(create_question("dep_hypersomnia", "depression", "Hypersomnie", "dep_sleep == 1"))
-        questions.append(create_question("dep_agitation", "depression", "Agitation psychomotrice", "dep_psychomotor == 1"))
-        questions.append(create_question("dep_retard", "depression", "Ralentissement psychomoteur", "dep_psychomotor == 1"))
-        questions.append(create_question("dep_idee_accel", "depression", "Accélération idéïque", "dep_concentration == 1"))
-        questions.append(create_question("dep_idee_ralent", "depression", "Ralentissement idéïque", "dep_concentration == 1"))
+        # Depressive symptoms - Conditional sub-items (using JSONLogic display_if)
+        questions.append(create_question("dep_hyperreact", "depression", "Impression subjective d'hyper-réactivité émotionnelle", 
+            display_if={"==": [{"var": "answers.dep_mood"}, 1]}))
+        questions.append(create_question("dep_hyporeact", "depression", "Impression subjective d'hypo-réactivité ou d'anesthésie", 
+            display_if={"==": [{"var": "answers.dep_mood"}, 1]}))
+        questions.append(create_question("dep_weight_loss", "depression", "Perte de poids", 
+            display_if={"==": [{"var": "answers.dep_weight_appetite"}, 1]}))
+        questions.append(create_question("dep_weight_gain", "depression", "Gain de poids", 
+            display_if={"==": [{"var": "answers.dep_weight_appetite"}, 1]}))
+        questions.append(create_question("dep_insomnia", "depression", "Insomnie", 
+            display_if={"==": [{"var": "answers.dep_sleep"}, 1]}))
+        questions.append(create_question("dep_hypersomnia", "depression", "Hypersomnie", 
+            display_if={"==": [{"var": "answers.dep_sleep"}, 1]}))
+        questions.append(create_question("dep_agitation", "depression", "Agitation", 
+            display_if={"==": [{"var": "answers.dep_psychomotor"}, 1]}))
+        questions.append(create_question("dep_retard", "depression", "Ralentissement", 
+            display_if={"==": [{"var": "answers.dep_psychomotor"}, 1]}))
+        questions.append(create_question("dep_idee_accel", "depression", "Impression d'accélération idéïque", 
+            display_if={"==": [{"var": "answers.dep_concentration"}, 1]}))
+        questions.append(create_question("dep_idee_ralent", "depression", "Impression de ralentissement idéïque", 
+            display_if={"==": [{"var": "answers.dep_concentration"}, 1]}))
         
         # Manic symptoms
         manic_main = [
-            ("man_elevated", "Humeur élevée/expansive"),
+            ("man_elevated", "Humeur élevée, expansive"),
             ("man_irritable", "Humeur irritable"),
-            ("man_grandeur", "Estime de soi augmentée / idées de grandeur"),
+            ("man_grandeur", "Augmentation de l'estime de soi ou idées de grandeur"),
             ("man_sleep_need", "Réduction du besoin de sommeil"),
-            ("man_talkative", "Plus grande communicabilité / désir de parler constamment"),
-            ("man_flight", "Fuite des idées / pensées qui défilent"),
-            ("man_distract", "Distractibilité"),
-            ("man_goal_activity", "Augmentation activité dirigée vers un but / agitation"),
-            ("man_risky", "Engagement excessif dans activités à risque")
+            ("man_talkative", "Plus grande communicabilité que d'habitude ou désir de parler constamment"),
+            ("man_flight", "Fuite des idées ou sensation subjective que les pensées défilent"),
+            ("man_distract", "Distractibilité : l'attention du sujet étant trop facilement attirée par des stimuli extérieurs sans pertinence"),
+            ("man_goal_activity", "Activité dirigée vers un but : augmentation de l'activité ou agitation psychomotrice"),
+            ("man_risky", "Engagement excessif dans des activités agréables mais à potentiel élevé de conséquences dommageables")
         ]
         
         for qid, text in manic_main:
@@ -270,7 +283,7 @@ class EtatPatient:
             # Safety: Suicidal ideation
             if answers.get("dep_suicide") == 1:
                 warnings.append(
-                    "🚨 ALERTE SÉCURITÉ: Idéation suicidaire présente (dep_suicide = oui). "
+                    "ALERTE SÉCURITÉ: Idéation suicidaire présente (dep_suicide = oui). "
                     "Évaluation du risque suicidaire immédiate requise. Considérer hospitalisation."
                 )
             
@@ -407,7 +420,7 @@ class EtatPatient:
         # Safety alert
         if safety_flag == 1:
             interpretation += (
-                "🚨 ALERTE SÉCURITÉ - IDÉATION SUICIDAIRE PRÉSENTE\n"
+                "ALERTE SÉCURITÉ - IDÉATION SUICIDAIRE PRÉSENTE\n"
                 "================================================================================\n"
                 "Le patient présente des pensées de mort, idéation suicidaire, tentative ou plan.\n\n"
                 "ACTIONS IMMÉDIATES REQUISES:\n"
@@ -436,7 +449,7 @@ class EtatPatient:
                 answers.get("dep_anhedonia") == 1
             )
             interpretation += (
-                "🔴 ÉPISODE DÉPRESSIF MAJEUR (Critère quantitatif DSM-IV atteint)\n\n"
+                "ÉPISODE DÉPRESSIF MAJEUR (Critère quantitatif DSM-IV atteint)\n\n"
                 f"Le patient présente {depressive_count} symptômes dépressifs, "
                 "dépassant le seuil de 5 symptômes requis pour un épisode dépressif majeur.\n\n"
             )
@@ -453,7 +466,7 @@ class EtatPatient:
             )
         elif depressive_count >= 2:
             interpretation += (
-                "🟡 SYMPTOMATOLOGIE DÉPRESSIVE SIGNIFICATIVE\n\n"
+                "SYMPTOMATOLOGIE DÉPRESSIVE SIGNIFICATIVE\n\n"
                 f"Le patient présente {depressive_count} symptômes dépressifs. "
                 "Bien que le seuil d'épisode dépressif majeur (5 symptômes) ne soit pas atteint, "
                 "cette symptomatologie nécessite surveillance et évaluation.\n\n"
@@ -474,14 +487,14 @@ class EtatPatient:
             interpretation += "\nSymptômes dépressifs présents:\n"
             symptom_labels = {
                 "dep_mood": "Humeur dépressive",
-                "dep_anhedonia": "Anhédonie (perte d'intérêt/plaisir)",
+                "dep_anhedonia": "Anhédonie (diminution marquée d'intérêt/plaisir)",
                 "dep_weight_appetite": "Changement poids/appétit",
                 "dep_sleep": "Trouble du sommeil",
                 "dep_psychomotor": "Trouble psychomoteur",
                 "dep_fatigue": "Fatigue/perte d'énergie",
-                "dep_guilt": "Dévalorisation/culpabilité",
+                "dep_guilt": "Sentiment de dévalorisation/culpabilité",
                 "dep_concentration": "Trouble concentration/indécision",
-                "dep_suicide": "🚨 Idéation suicidaire"
+                "dep_suicide": "Pensées récurrentes de mort / idéation suicidaire"
             }
             for symptom in depressive_symptoms:
                 interpretation += f"  • {symptom_labels.get(symptom, symptom)}\n"
@@ -526,7 +539,7 @@ class EtatPatient:
                 answers.get("man_irritable") == 1
             )
             interpretation += (
-                "🟠 SYMPTOMATOLOGIE MANIAQUE/HYPOMANIAQUE SIGNIFICATIVE\n\n"
+                "SYMPTOMATOLOGIE MANIAQUE/HYPOMANIAQUE SIGNIFICATIVE\n\n"
                 f"Le patient présente {manic_count} symptômes maniaques, "
                 "dépassant le seuil de 3 symptômes (en plus du changement d'humeur) "
                 "requis pour un épisode maniaque/hypomaniaque.\n\n"
@@ -565,15 +578,15 @@ class EtatPatient:
         if manic_symptoms:
             interpretation += "\nSymptômes maniaques présents:\n"
             symptom_labels = {
-                "man_elevated": "Humeur élevée/expansive",
+                "man_elevated": "Humeur élevée, expansive",
                 "man_irritable": "Humeur irritable",
-                "man_grandeur": "Estime de soi augmentée/idées de grandeur",
+                "man_grandeur": "Augmentation de l'estime de soi ou idées de grandeur",
                 "man_sleep_need": "Réduction besoin de sommeil",
-                "man_talkative": "Plus grande communicabilité",
-                "man_flight": "Fuite des idées",
+                "man_talkative": "Plus grande communicabilité que d'habitude",
+                "man_flight": "Fuite des idées ou sensation que les pensées défilent",
                 "man_distract": "Distractibilité",
-                "man_goal_activity": "Augmentation activité dirigée",
-                "man_risky": "Engagement excessif activités à risque"
+                "man_goal_activity": "Activité dirigée vers un but : augmentation activité",
+                "man_risky": "Engagement excessif activités à potentiel de conséquences dommageables"
             }
             for symptom in manic_symptoms:
                 interpretation += f"  • {symptom_labels.get(symptom, symptom)}\n"
@@ -581,7 +594,7 @@ class EtatPatient:
         # Mixed features
         if depressive_count >= 3 and manic_count >= 3:
             interpretation += (
-                "\n\n🟣 CARACTÉRISTIQUES MIXTES\n"
+                "\n\nCARACTÉRISTIQUES MIXTES\n"
                 "================================================================================\n"
                 "Le patient présente simultanément des symptômes dépressifs ET maniaques significatifs.\n\n"
                 "Considérations diagnostiques:\n"
@@ -601,7 +614,7 @@ class EtatPatient:
         interpretation += "\n\n=== RECOMMANDATIONS CLINIQUES ===\n"
         
         if safety_flag == 1:
-            interpretation += "1. 🚨 PRIORITÉ: Évaluation risque suicidaire et mesures de sécurité immédiates\n"
+            interpretation += "1. PRIORITÉ: Évaluation risque suicidaire et mesures de sécurité immédiates\n"
         
         if depressive_count >= 5:
             interpretation += "2. Évaluation diagnostique complète pour épisode dépressif majeur\n"
